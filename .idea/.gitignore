@@ -1,5 +1,9 @@
 # Default ignored files
-/workspace.xml
-venv/
-__pycache__/
+/workspace.xml      
 .vscode/
+*.pyc
+.idea/
+__pycache__/
+*.db
+.DS_Store
+venv/
