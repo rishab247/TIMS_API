@@ -172,8 +172,3 @@ def register_query(query1,query2):
     except Exception as e:
         return jsonify({'msg': str(e)}), 401
 
-
-if __name__ == '__main__':
-
-
-    app.run(host='https://apitims.azurewebsites.net')
