@@ -4,6 +4,7 @@ import jwt
 import json
 import datetime
 from functools import wraps
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'super_safe_secretasas33323232as23as2a3s2s3a2s3a2s32a3s'
@@ -19,23 +20,26 @@ def token_required(f):
             data = jwt.decode(token,app.config['SECRET_KEY'])
         except:
           return jsonify({'msg':'token is not valid',}),401
-        return f(*args,**kwargs)
+        return f(data,*args,**kwargs)
     return decorated
+
+
 
 
 @app.route('/Creater')
 def Creater():
     return jsonify({'creater': 'Rishab Aggarwal','Email': 'Rishabaggarwal247@gmail.com' } ),200
+@app.route('/')
+def Start():
+    return jsonify({'msg': 'Welcome!' } ),200
 @app.route('/About')
 def About():
     return jsonify({'About': 'STUFFFF' } ),200
 
 
-@app.route('/Verify')
+@app.route('/Verify',methods=['GET'])
 @token_required
-def Verify():
-    token = request.args.get('token')
-    data = jwt.decode(token, app.config['SECRET_KEY'])
+def Verify(data):
     query = "SELECT  [Status] FROM [dbo].[Status]where Euid = '"+data['user'] +"' "
     result = run_query(query)
     print(result[0][0])
