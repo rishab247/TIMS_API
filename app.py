@@ -176,4 +176,4 @@ def register_query(query1,query2):
 if __name__ == '__main__':
 
 
-    app.run(debug= True)
+    app.run(host='https://apitims.azurewebsites.net')
