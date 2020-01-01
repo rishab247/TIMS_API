@@ -5,6 +5,9 @@ import json
 import datetime
 import database as db
 from functools import wraps
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 
 app = Flask(__name__)
 
@@ -32,6 +35,43 @@ def token_required(f):
           return jsonify({'msg':'token is not valid',}),401
         return f(data,*args,**kwargs)
     return decorated
+
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address
+ )
+@app.route('/login/test')
+@limiter.limit("5 per hour")
+def login():
+    auth = request.authorization
+    if auth.username=='' or auth.password=='':
+        return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+
+    query1  = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '"+auth.username+"'"
+    query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '"+auth.username +"' "
+    result=(db.query(query1, 0))
+    result1=(db.query(query2, 0))
+    if auth and auth.password ==result[0]:
+        token = jwt.encode({'user': auth.username,'HOD': result1[0],
+                            'hod_department': result1[1],
+                            'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
+        return jsonify({'token': token.decode('UTF-8')})
+    return make_response({'msg':'Login req'},401,{'msg':'Login req'})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -76,32 +116,32 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.get_data().decode("utf-8")
-    data = json.loads(data)
-    query1 = "INSERT INTO [dbo].[user_info] VALUES ("
-    query1 = query1+ "'"+data['Euid']+"',"
-    query1 = query1+ "'"+data['Name']+"',"
-    query1 = query1+ "'"+data['Email']+"',"
-    query1 = query1+ "'"+data['Password']+"',"
-    query1 = query1+ "'"+data['Phone_No']+"',"
-    query1 = query1+ "'"+data['Department_Name']+"',"
-    query1 = query1+ "'"+data['DOJ']+"',"
-    query1 = query1+ "'"+data['Qualifications']+"',"
-    query1 = query1+ "'"+data['University']+"',"
-    query1 = query1+ "'"+data['DOB']+"'"+");"
-
-    query2 = "INSERT INTO [dbo].[Status] VALUES ("
-    query2 = query2+ "'"+data['Euid']+"',"
-    query2 = query2+ "0,0,"
-    query2 = query2+ "'"+data['Name']+"',"
-    query2 = query2+ "'"+data['Hod_Department']+"');"
-
-    result1 = (db.query(query1,2))
-    result2 = (db.query(query2,2))
-    if result1=='Finished' and result2=='Finished':
-       return jsonify({'msg': 'inserted', }), 200
-    return jsonify({'msg': result1+'   '+result2, }), 200
-
+    try:
+        data = request.get_data().decode("utf-8")
+        data = json.loads(data)
+        query1 = "INSERT INTO [dbo].[user_info] VALUES ("
+        query1 = query1+ "'"+data['Euid']+"',"
+        query1 = query1+ "'"+data['Name']+"',"
+        query1 = query1+ "'"+data['Email']+"',"
+        query1 = query1+ "'"+data['Password']+"',"
+        query1 = query1+ "'"+data['Phone_No']+"',"
+        query1 = query1+ "'"+data['Department_Name']+"',"
+        query1 = query1+ "'"+data['DOJ']+"',"
+        query1 = query1+ "'"+data['Qualifications']+"',"
+        query1 = query1+ "'"+data['University']+"',"
+        query1 = query1+ "'"+data['DOB']+"'"+");"
+        query2 = "INSERT INTO [dbo].[Status] VALUES ("
+        query2 = query2+ "'"+data['Euid']+"',"
+        query2 = query2+ "0,0,"
+        query2 = query2+ "'"+data['Name']+"',"
+        query2 = query2+ "'"+data['Hod_Department']+"');"
+        result1 = (db.query(query1,2))
+        result2 = (db.query(query2,2))
+        if result1=='Finished' and result2=='Finished':
+           return jsonify({'msg': 'inserted', }), 200
+        return jsonify({'msg': result1+'   '+result2, }), 200
+    except:
+        return  jsonify({"msg":"error"})
 
 @app.route('/user/data',methods=['GET'])
 @token_required
@@ -123,7 +163,7 @@ def userdata(data):
 
 
 #extra code
-# def run_query(query1):
+# def run_query(query1):d
 #     try:
 #
 #         try:
