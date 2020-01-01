@@ -31,7 +31,7 @@ def Creater():
     return jsonify({'creater': 'Rishab Aggarwal','Email': 'Rishabaggarwal247@gmail.com','creater1': 'tushar tambi','Email1': 'tushartambi@gmail.com' } ),200
 @app.route('/')
 def Start():
-    return jsonify({'msg': 'Welcome!' } ),200
+    return jsonify({'msg': 'Hello World!' } ),200
 @app.route('/About')
 def About():
     return jsonify({'About': 'STUFFFF' } ),200
