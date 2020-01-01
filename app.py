@@ -3,11 +3,21 @@ from flask import Flask,jsonify,request,make_response,logging
 import jwt
 import json
 import datetime
+import database as db
 from functools import wraps
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'super_safe_secretasas33323232as23as2a3s2s3a2s3a2s32a3s'
+#connection
+try:
+    connection = db.getconnection()
+except:
+    try:
+        connection=db.getconnection()
+    except Exception as e:
+        print(str(e))
+
 
 def token_required(f):
     @wraps(f)
@@ -41,23 +51,23 @@ def About():
 @token_required
 def Verify(data):
     query = "SELECT  [Status] FROM [dbo].[Status]where Euid = '"+data['user'] +"' "
-    result = run_query(query)
-    print(result[0][0])
-    return jsonify({'Status':result[0][0]  }),200
+    result = db.query(query, 0)
+    return jsonify({'Status':result[0]}),200
 
 
 @app.route('/login')
 def login():
     auth = request.authorization
-    print(auth)
+    if auth.username=='' or auth.password=='':
+        return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+
     query1  = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '"+auth.username+"'"
     query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '"+auth.username +"' "
-    print(query1)
-    result = login_query(query1,query2)
-    print(result[0])
+    result=(db.query(query1, 0))
+    result1=(db.query(query2, 0))
     if auth and auth.password ==result[0]:
-        token = jwt.encode({'user': auth.username,'HOD': result[1],
-                            'hod_department': result[2],
+        token = jwt.encode({'user': auth.username,'HOD': result1[0],
+                            'hod_department': result1[1],
                             'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
         return jsonify({'token': token.decode('UTF-8')})
     return make_response({'msg':'Login req'},401,{'msg':'Login req'})
@@ -85,8 +95,12 @@ def register():
     query2 = query2+ "0,0,"
     query2 = query2+ "'"+data['Name']+"',"
     query2 = query2+ "'"+data['Hod_Department']+"');"
-    print(query2)
-    return register_query(query1,query2)
+
+    result1 = (db.query(query1,2))
+    result2 = (db.query(query2,2))
+    if result1=='Finished' and result2=='Finished':
+       return jsonify({'msg': 'inserted', }), 200
+    return jsonify({'msg': result1+'   '+result2, }), 200
 
 
 
@@ -103,72 +117,50 @@ def register():
 
 
 
-
-def run_query(query1):
-    try:
-        connection = pypyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
-                                      'Server=tcp:timsserver1.database.windows.net,1433;'
-                                      'Database=TIMS;'
-                                      'Uid=timsadmin;Pwd=Rishab@12;')
-        try:
-
-            cursor = connection.cursor()
-            cursor.execute(query1)
-            result = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            return  result
-        except Exception as e:
-            connection.close()
-            return str(e)
-    except Exception as e:
-        return  str(e)
+# def run_query(query1):
+#     try:
+#
+#         try:
+#
+#             cursor = connection.cursor()
+#             cursor.execute(query1)
+#             result = cursor.fetchall()
+#             cursor.close()
+#             return  result
+#         except Exception as e:
+#             return str(e)
+#     except Exception as e:
+#         return  str(e)
 
 
 
 
-def login_query(query1,query2):
-    try:
-        connection = pypyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
-                                      'Server=tcp:timsserver1.database.windows.net,1433;'
-                                      'Database=TIMS;'
-                                      'Uid=timsadmin;Pwd=Rishab@12;')
-        try:
-
-            cursor = connection.cursor()
-            cursor.execute(query1)
-            result = cursor.fetchone()
-            cursor.execute(query2)
-            result1 =cursor.fetchone()
-            cursor.close()
-            connection.close()
-            a = [result[0],result1[0],result1[1]]
-            return  a
-        except Exception as e:
-            connection.close()
-            return str(e)
-    except Exception as e:
-        return  str(e)
+# def login_query(query1,query2):
+#         try:
+#
+#             cursor = connection.cursor()
+#             cursor.execute(query1)
+#             result = cursor.fetchone()
+#             cursor.execute(query2)
+#             result1 =cursor.fetchone()
+#             connection.commit()
+#             cursor.close()
+#             a = [result[0],result1[0],result1[1]]
+#             return  a
+#         except Exception as e:
+#             connection.close()
+#             return str(e)
 
 
 
 def register_query(query1,query2):
-    try:
-        connection = pypyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
-                                      'Server=tcp:timsserver1.database.windows.net,1433;'
-                                      'Database=TIMS;'
-                                      'Uid=timsadmin;Pwd=Rishab@12;')
+
         try:
 
             cursor = connection.cursor()
             cursor.execute(query1)
             cursor.execute(query2)
-            cursor.commit()
-            connection.close()
+            connection.commit()
             return jsonify({'msg': 'inserted', }), 200
         except Exception as e:
-            connection.close()
-            return jsonify({'msg': str(e)}), 401
-    except Exception as e:
-        return jsonify({'msg': str(e)}), 401
-
+             return jsonify({'msg': str(e)}), 401
