@@ -103,6 +103,13 @@ def register():
     return jsonify({'msg': result1+'   '+result2, }), 200
 
 
+@app.route('/user/data',methods=['GET'])
+@token_required
+def userdata(data):
+    query = "SELECT  * FROM [dbo].[user_info]where Euid = '"+data['user'] +"' "
+    result = db.query(query, 0)
+    print(result)
+    return jsonify({'Status':(result)}),200
 
 
 
@@ -115,8 +122,7 @@ def register():
 
 
 
-
-
+#extra code
 # def run_query(query1):
 #     try:
 #
@@ -152,15 +158,15 @@ def register():
 #             return str(e)
 
 
-
-def register_query(query1,query2):
-
-        try:
-
-            cursor = connection.cursor()
-            cursor.execute(query1)
-            cursor.execute(query2)
-            connection.commit()
-            return jsonify({'msg': 'inserted', }), 200
-        except Exception as e:
-             return jsonify({'msg': str(e)}), 401
+#
+# def register_query(query1,query2):
+#
+#         try:
+#
+#             cursor = connection.cursor()
+#             cursor.execute(query1)
+#             cursor.execute(query2)
+#             connection.commit()
+#             return jsonify({'msg': 'inserted', }), 200
+#         except Exception as e:
+#              return jsonify({'msg': str(e)}), 401
