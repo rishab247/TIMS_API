@@ -5,9 +5,6 @@ import json
 import datetime
 import database as db
 from functools import wraps
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
 
 app = Flask(__name__)
 
@@ -35,35 +32,6 @@ def token_required(f):
           return jsonify({'msg':'token is not valid',}),401
         return f(data,*args,**kwargs)
     return decorated
-
-
-limiter = Limiter(
-    app,
-    key_func=get_remote_address
- )
-@app.route('/test')
-@limiter.limit("5 per hour")
-def login():
-    auth = request.authorization
-    if auth.username=='' or auth.password=='':
-        return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-
-    query1  = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '"+auth.username+"'"
-    query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '"+auth.username +"' "
-    result=(db.query(query1, 0))
-    result1=(db.query(query2, 0))
-    if auth and auth.password ==result[0]:
-        token = jwt.encode({'user': auth.username,'HOD': result1[0],
-                            'hod_department': result1[1],
-                            'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
-        return jsonify({'token': token.decode('UTF-8')})
-    return make_response({'msg':'Login req'},401,{'msg':'Login req'})
-
-
-
-
-
-
 
 
 
