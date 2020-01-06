@@ -41,7 +41,7 @@ limiter = Limiter(
     app,
     key_func=get_remote_address
  )
-@app.route('/login/test')
+@app.route('/test')
 @limiter.limit("5 per hour")
 def login():
     auth = request.authorization
