@@ -66,8 +66,11 @@ def Verify(data):
 @app.route('/login')
 def login():
     auth = request.authorization
-    if auth.username=='' or auth.password=='':
+    if auth is None:
         return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+    if auth.username == '' or auth.password == '':
+        return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+
 
     query1  = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '"+auth.username+"'"
     query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '"+auth.username +"' "
