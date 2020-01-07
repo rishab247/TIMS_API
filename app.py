@@ -73,6 +73,8 @@ def login():
     query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '"+auth.username +"' "
     result=(db.query(query1, 0))
     result1=(db.query(query2, 0))
+    if result is None :
+            return jsonify({'msg' : 'incorrect username'}),401
     if auth and auth.password ==result[0]:
         token = jwt.encode({'user': auth.username,'HOD': result1[0],
                             'hod_department': result1[1],
