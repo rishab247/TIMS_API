@@ -54,6 +54,7 @@ def About():
 @app.route('/Verify', methods=['GET'])
 @token_required
 def Verify(data):
+
     query = "SELECT  [Status] FROM [dbo].[Status]where Euid = '" + data['user'] + "' "
     result = db.query(query, 0)
     return jsonify({'Status': result[0]}), 200
@@ -67,7 +68,8 @@ def login():
             return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
         if auth.username == '' or auth.password == '':
             return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-
+        if not db.check(auth.username) or not db.check(auth.password):
+            return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
         query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + auth.username + "'"
         query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '" + auth.username + "' "
         result = (db.query(query1, 0))
@@ -89,6 +91,11 @@ def register():
     try:
         data = request.get_data().decode("utf-8")
         data = json.loads(data)
+        if not db.check(data['Euid']) or not db.check(data['Name'])or not db.Email_check(data['Email'])or not db.check(data['Password'])or \
+                not db.check(data['Phone_No']) or not db.check(data['Department_Name']) or not db.check(data['DOJ']) or \
+                not db.check(data['Qualifications']) or not db.check(data['University']) or not db.check(data['DOB'])or \
+                not db.check(data['Hod_Department']):
+            raise Exception
         query1 = "INSERT INTO [dbo].[user_info] VALUES ("
         query1 = query1 + "'" + data['Euid'] + "',"
         query1 = query1 + "'" + data['Name'] + "',"
@@ -135,6 +142,57 @@ def userpaperlist(data):
     result = db.query(query, 1)
 
     return jsonify({'msg': result}), 200
+
+
+@app.route('/Verify/password',methods=['POST']  )
+@token_required
+def verifypassword(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+
+        if jsondata['password']==''or jsondata is None or jsondata['password'] is None or not db.check(jsondata['password']):
+            raise Exception
+    except Exception as e:
+        return jsonify({'msg': "No data present "+str(e)}), 401
+
+    query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + data['user'] + "'"
+    result = (db.query(query1, 0))
+    if jsondata['password']==result[0]:
+        return jsonify({'msg': 'password verified'}), 200
+
+    return jsonify({'msg': "wrongpassword"}), 401
+
+
+
+
+type_check = ('Name','Email','Password','Phone_No','Qualifications','University',)
+
+@app.route('/update/<type>' ,methods=['POST'] )
+@token_required
+def update(data,type):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if jsondata[type]==''or jsondata is None or jsondata[type] is None:
+            raise Exception
+        if type not in type_check:
+           raise Exception
+        if type=='' or type is None or type=="" or not db.check(type):
+            return Exception
+    except Exception as e:
+        return jsonify({'msg': "No data present " + str(e)}), 401
+    query  = "UPDATE [dbo].[user_info] SET "+type+ " = '"+jsondata[type]+"' WHERE Euid = '"+ data['user']  +"';"
+    result = (db.query(query, 2))
+    if(result == 'Finished'):
+        return jsonify({'msg': 'updated'}), 200
+    return jsonify({'msg': 'updated'}), 405
+
+
+
+
+
+
 
 
 

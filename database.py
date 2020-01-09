@@ -1,4 +1,9 @@
 import pypyodbc
+from flask import Flask,jsonify,request,make_response,logging
+import jwt
+import json
+import datetime
+import re
 
 
 
@@ -52,4 +57,23 @@ def query(query1,fetch):
 
         except Exception as e:
             return str(e)
+
+
+def check(string):
+    regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+    if (regex.search(string) == None):
+        return True
+
+    else:
+        return False
+
+
+def Email_check(string):
+    regex = re.compile('[_!#$%^&*()<>?/\|}{~:]')
+    if (regex.search(string) == None):
+        return True
+
+    else:
+        return False
+
 
