@@ -189,6 +189,42 @@ def update(data,type):
     return jsonify({'msg': 'updated'}), 405
 
 
+@app.route('/user/paper')
+@token_required
+def paper(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+
+        if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
+            raise Exception
+        query =  "SELECT * FROM [dbo].[research_paper] WHERE paper_pkey ="+ jsondata['paperid']+" AND Euid ='"+data['user']+"'"
+        result = db.query(query,0)
+        return jsonify({'Status': result}), 200
+
+    except Exception as e:
+        return jsonify({'msg': "No data present " + str(e)}), 401
+
+
+
+@app.route('/user/authorlist')
+@token_required
+def authorlist(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+
+        if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
+            raise Exception
+        query =  "SELECT * FROM [dbo].[Paper_author] WHERE Paper_key ="+ jsondata['paperid']
+        print(query)
+        result = db.query(query,1)
+        return jsonify({'Status': result}), 200
+
+    except Exception as e:
+        return jsonify({'msg': "No data present " + str(e)}), 401
+
+
 
 
 
