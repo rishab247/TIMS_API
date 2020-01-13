@@ -8,7 +8,7 @@ from functools import wraps
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'super_safe_secretasas33323232as23as2a3s2s3a2s3a2s32a3s'
+app.config['SECRET_KEY'] = 'super_safe_67uy67uy54tre3we098uy6t5r1q2we345ty7u8io90secretasas33323232as23as2a3s2s3a2s3a2s32a3s'
 # connection
 try:
     connection = db.getconnection()
@@ -49,6 +49,11 @@ def Start():
 @app.route('/About')
 def About():
     return jsonify({'About': 'STUFFFF'}), 200
+
+@app.route('/Alert')
+def Alert():
+    return jsonify({'msg': 'Alert!'}), 200
+
 
 
 @app.route('/Verify', methods=['GET'])
@@ -130,19 +135,33 @@ def userdata(data):
     return jsonify({'Status': (result)}), 200
 
 
-@app.route('/Alert')
-def Alert():
-    return jsonify({'msg': 'Alert!'}), 200
-
-
-@app.route('/user/paperlist')
+@app.route('/user/List')
 @token_required
 def userpaperlist(data):
-    query = "SELECT  * FROM [dbo].[research_paper] where Euid = '" + data['user'] + "' "
-    result = db.query(query, 1)
-
-    return jsonify({'msg': result}), 200
-
+    # query = "SELECT  * FROM [dbo].[research_paper] where Euid = '" + data['user'] + "' "
+    try:
+        try:
+            result = db.query("SELECT  * FROM [dbo].[Project] where Euid = '" + data['user'] + "' ", 1)
+        except Exception as e:
+            result  = "No data present"+str(e)
+        try:
+            result1 = db.query("SELECT  * FROM [dbo].[Publication] where Euid = '" + data['user'] + "' ", 1)
+        except Exception as e:
+            result1  = "No data present"+str(e)
+        try:
+            result2 = db.query("SELECT  * FROM [dbo].[Honors_and_Award] where Euid = '" + data['user'] + "' ", 1)
+        except Exception as e:
+            result2  = "No data present"+str(e)
+        try:
+            result3 = db.query("SELECT  * FROM [dbo].[Patent] where Euid = '" + data['user'] + "' ", 1)
+        except Exception as e:
+            result3  = "No data present"+str(e)
+        return jsonify({'Project': result,
+                        'Publication': result1,
+                        'Honors_and_Award': result2,
+                        'Patent': result3}), 200
+    except Exception as e:
+        return jsonify({'msg': "No data present " + str(e)}), 401
 
 @app.route('/Verify/password',methods=['POST']  )
 @token_required
@@ -166,45 +185,29 @@ def verifypassword(data):
 
 
 
-type_check = ('Name','Email','Password','Phone_No','Qualifications','University',)
-
-@app.route('/update/<type>' ,methods=['POST'] )
-@token_required
-def update(data,type):
-    try:
-        jsondata = request.get_data().decode("utf-8")
-        jsondata = json.loads(jsondata)
-        if jsondata[type]==''or jsondata is None or jsondata[type] is None:
-            raise Exception
-        if type not in type_check:
-           raise Exception
-        if type=='' or type is None or type=="" or not db.check(type):
-            return Exception
-    except Exception as e:
-        return jsonify({'msg': "No data present " + str(e)}), 401
-    query  = "UPDATE [dbo].[user_info] SET "+type+ " = '"+jsondata[type]+"' WHERE Euid = '"+ data['user']  +"';"
-    result = (db.query(query, 2))
-    if(result == 'Finished'):
-        return jsonify({'msg': 'updated'}), 200
-    return jsonify({'msg': 'updated'}), 405
-
-
-@app.route('/user/paper')
-@token_required
-def paper(data):
-    try:
-        jsondata = request.get_data().decode("utf-8")
-        jsondata = json.loads(jsondata)
-
-        if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
-            raise Exception
-        query =  "SELECT * FROM [dbo].[research_paper] WHERE paper_pkey ="+ jsondata['paperid']+" AND Euid ='"+data['user']+"'"
-        result = db.query(query,0)
-        return jsonify({'Status': result}), 200
-
-    except Exception as e:
-        return jsonify({'msg': "No data present " + str(e)}), 401
-
+# type_check = ('Name','Email','Password','Phone_No','Qualifications','University',)
+#
+# @app.route('/update/<type>' ,methods=['POST'] )
+# @token_required
+# def update(data,type):
+#     try:
+#         jsondata = request.get_data().decode("utf-8")
+#         jsondata = json.loads(jsondata)
+#         if jsondata[type]==''or jsondata is None or jsondata[type] is None:
+#             raise Exception
+#         if type not in type_check:
+#            raise Exception
+#         if type=='' or type is None or type=="" or not db.check(type):
+#             return Exception
+#     except Exception as e:
+#         return jsonify({'msg': "No data present " + str(e)}), 401
+#     query  = "UPDATE [dbo].[user_info] SET "+type+ " = '"+jsondata[type]+"' WHERE Euid = '"+ data['user']  +"';"
+#     result = (db.query(query, 2))
+#     if(result == 'Finished'):
+#         return jsonify({'msg': 'updated'}), 200
+#     return jsonify({'msg': 'updated'}), 405
+#
+#
 
 
 @app.route('/user/authorlist')
@@ -225,6 +228,21 @@ def authorlist(data):
         return jsonify({'msg': "No data present " + str(e)}), 401
 
 
+# @app.route('/user/paper')
+# @token_required
+# def paper(data):
+#     try:
+#         jsondata = request.get_data().decode("utf-8")
+#         jsondata = json.loads(jsondata)
+#
+#         if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
+#             raise Exception
+#         query =  "SELECT * FROM [dbo].[research_paper] WHERE paper_pkey ="+ jsondata['paperid']+" AND Euid ='"+data['user']+"'"
+#         result = db.query(query,0)
+#         return jsonify({'Status': result}), 200
+#
+#     except Exception as e:
+#         return jsonify({'msg': "No data present " + str(e)}), 401
 
 
 
