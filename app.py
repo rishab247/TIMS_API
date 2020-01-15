@@ -121,9 +121,9 @@ def register():
         result2 = (db.query(query2, 2))
         if result1 == 'Finished' and result2 == 'Finished':
             return jsonify({'msg': 'inserted', }), 200
-        return jsonify({'msg': result1 + '   ' + result2, }), 200
-    except:
-        return jsonify({"msg": "error"})
+        return jsonify({'msg': result1 + '   ' + result2, }), 401
+    except Exception as e:
+        return jsonify({"msg": str(e)}),401
 
 
 @app.route('/userdata', methods=['GET'])
@@ -141,7 +141,7 @@ def userpaperlist(data):
     # query = "SELECT  * FROM [dbo].[research_paper] where Euid = '" + data['user'] + "' "
     try:
         try:
-            result = db.query("SELECT  * FROM [dbo].[Project] where Euid = '" + data['user'] + "' ", 1)
+            result = db.query("SELECT  * FROM [dbo].[Project_1] where Euid = '" + data['user'] + "' ", 1)
         except Exception as e:
             result  = "No data present"+str(e)
         try:
