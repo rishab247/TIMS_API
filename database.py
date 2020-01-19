@@ -1,3 +1,5 @@
+import decimal
+
 import pypyodbc
 from flask import Flask,jsonify,request,make_response,logging
 import jwt
@@ -76,4 +78,10 @@ def Email_check(string):
     else:
         return False
 
-
+#
+# class DecimalEncoder(json.JSONEncoder):
+#     def _iterencode(self, o, markers=None):
+#         if isinstance(o, decimal.Decimal):
+#
+#             return (str(o) for o in [o])
+#         return super(DecimalEncoder, self)._iterencode(o, markers)

@@ -134,7 +134,6 @@ def userdata(data):
     print(result)
     return jsonify({'Status': (result)}), 200
 
-
 @app.route('/user/Accomplishment')
 @token_required
 def useraccomplishment(data):
@@ -204,7 +203,7 @@ def userAccomplishmenDetails(data):
                 if(not verifypassword(data, jsondata['id'],jsondata['Type']  )):
                     raise Exception
             except Exception as e:
-                return jsonify({'msg': str(e)}), 401
+                return jsonify({'msg': str(e)}), 404
             return jsonify({'data': result, 'author':result1}), 200
         elif (jsondata['Type'] == 'Honors_and_Award'):
             try:
@@ -214,7 +213,7 @@ def userAccomplishmenDetails(data):
                 if(not verifypassword(data, jsondata['id'] ,jsondata['Type']  )):
                     raise Exception
             except Exception as e:
-                return jsonify({'msg': str(e)}), 401
+                return jsonify({'msg': str(e)}), 404
             return jsonify({'data': result }), 200
         else:
             return jsonify({'msg': 'Type error'+jsondata['Type']}), 401
@@ -224,6 +223,23 @@ def userAccomplishmenDetails(data):
       return jsonify({'msg': str(e)}), 401
 
 
+
+@app.route('/author/list')
+@token_required
+def authorlist(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+
+        if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
+            raise Exception
+        query =  "SELECT * FROM [dbo].[Paper_author] WHERE Paper_key ="+ jsondata['paperid']
+        print(query)
+        result = db.query(query,1)
+        return jsonify({'Status': result}), 200
+
+    except Exception as e:
+        return jsonify({'msg': "No data present " + str(e)}), 401
 
 
 
@@ -251,67 +267,276 @@ def verifypassword1(data):
 
 
 
-# type_check = ('Name','Email','Password','Phone_No','Qualifications','University',)
-#
-# @app.route('/update/<type>' ,methods=['POST'] )
-# @token_required
-# def update(data,type):
-#     try:
-#         jsondata = request.get_data().decode("utf-8")
-#         jsondata = json.loads(jsondata)
-#         if jsondata[type]==''or jsondata is None or jsondata[type] is None:
-#             raise Exception
-#         if type not in type_check:
-#            raise Exception
-#         if type=='' or type is None or type=="" or not db.check(type):
-#             return Exception
-#     except Exception as e:
-#         return jsonify({'msg': "No data present " + str(e)}), 401
-#     query  = "UPDATE [dbo].[user_info] SET "+type+ " = '"+jsondata[type]+"' WHERE Euid = '"+ data['user']  +"';"
-#     result = (db.query(query, 2))
-#     if(result == 'Finished'):
-#         return jsonify({'msg': 'updated'}), 200
-#     return jsonify({'msg': 'updated'}), 405
-#
-#
-
-
-@app.route('/author/list')
+@app.route('/author/search',methods=['POST']  )
 @token_required
-def authorlist(data):
+def authorsearch(data):
     try:
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
 
-        if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
+        if jsondata['author_Email']==''or jsondata is None or jsondata['author_Email'] is None or not db.Email_check(jsondata['author_Email']):
             raise Exception
-        query =  "SELECT * FROM [dbo].[Paper_author] WHERE Paper_key ="+ jsondata['paperid']
-        print(query)
-        result = db.query(query,1)
-        return jsonify({'Status': result}), 200
-
+        query1 = "SELECT [Aid] FROM [dbo].[Author] WHERE Email = '" + jsondata['author_Email'] + "'"
+        result = (db.query(query1, 0))
+        return jsonify({'msg': result[0]}), 200
     except Exception as e:
-        return jsonify({'msg': "No data present " + str(e)}), 401
+        return jsonify({'msg': "No data present "+str(e)}), 401
+
+
+
+@app.route('/user/upload/Publication',methods=['POST']  )
+@token_required
+def Accomplishmentuploadpublication(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+# 'noofauthor'  'Type'  'author'
+        if not db.check(jsondata['noofauthor']) or not db.check(jsondata['Title'])   \
+                or not db.check(jsondata['Date'])or not db.check(jsondata['Description'])or not db.check(jsondata['Publication_or_publisher']) \
+                or jsondata['noofauthor']=='' or jsondata['Title']==''  or jsondata['Publication_or_publisher']==''  \
+                or jsondata['Date']==''or jsondata['Description']=='' or jsondata['noofauthor'] is None or \
+                jsondata['Title']is None or   jsondata['Publication_or_publisher'] is None  \
+                or jsondata['Date']is None or  jsondata['Description'] is None:
+            raise Exception
+        if(db.query(" SELECT CASE WHEN EXISTS (select * from Publication where Euid='"+data['user']+"' and title='"+jsondata['Title']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "Dublicate entry " }), 401
+        query1 = "insert into Publication values('"+jsondata['Title']+"','"+jsondata['Publication_or_publisher']+"','"+jsondata['Date']+"','"+jsondata['Description']+"','"+jsondata['url']+"','"+data['user']+"') "
+        result=(db.query(query1,2))
+        if(result is not 'Finished'):
+            raise Exception
+        result = str(db.query("select SCOPE_IDENTITY();", 1))
+        result = result[11:-5]
+        result = int(result)
+        author_list_id = list(jsondata['author'])
+        noofauthor=int(jsondata['noofauthor'])
+        author_type_list =jsondata['typeofauthor']
+        no_new_author =author_type_list.count(1)
+        no_old_author =author_type_list.count(0)
+        new_author_data = (jsondata['authordata'])
+
+        print(str(noofauthor)+"   "+str(no_old_author)+"   "+str(no_new_author))
+        if (int(no_new_author + no_old_author) != int(noofauthor)):
+            raise Exception
+        if (len(author_list_id) != int(no_old_author)):
+            raise Exception
+        for i in range (no_new_author):
+             print(i)
+             author_list_id.append(int(addauthor(new_author_data[i])))
+
+        print(author_list_id)
+        for i in range(0,int(jsondata['noofauthor'])):
+            print(author_list_id[i])
+            query1 = "insert into publication_author values("+str(author_list_id[i])+", "+ str(result)+")"
+            result1 = (db.query(query1, 2))
+            if (result1 is not 'Finished'):
+                raise Exception
+        print(author_list_id)
+        return jsonify({'msg': author_list_id }), 200
+    except Exception as e:
+        return jsonify({'msg': "No data present "+str(e)}), 401
+
+
+@app.route('/user/upload/Project',methods=['POST']  )
+@token_required
+def Accomplishmentuploadproject(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+# 'noofauthor'  'Type'  'author'
+        if not db.check(jsondata['noofauthor']) or not db.check(jsondata['Title'])   \
+                or not db.check(jsondata['Date'])or not db.check(jsondata['Description']) \
+                or jsondata['noofauthor']=='' or jsondata['Title']==''    \
+                or jsondata['Date']==''or jsondata['Description']=='' or jsondata['noofauthor'] is None or \
+                jsondata['Title']is None    \
+                or jsondata['Date']is None or  jsondata['Description'] is None:
+            raise Exception("22")
+        if(db.query(" SELECT CASE WHEN EXISTS (select * from Project_1 where Euid='"+data['user']+"' and title='"+jsondata['Title']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "Dublicate entry " }), 401
+        query1 = "insert into Project_1 values('"+jsondata['Title']+"','"+jsondata['Date']+"','"+jsondata['Description']+"','"+jsondata['url']+"','"+data['user']+"') "
+        result=(db.query(query1,2))
+        print(query1)
+        if(result is not 'Finished'):
+            raise Exception
+        result = str(db.query("select SCOPE_IDENTITY();", 1))
+        result = result[11:-5]
+        result = int(result)
+        author_list_id = list(jsondata['author'])
+        noofauthor=int(jsondata['noofauthor'])
+        author_type_list =jsondata['typeofauthor']
+        no_new_author =author_type_list.count(1)
+        no_old_author =author_type_list.count(0)
+        new_author_data = (jsondata['authordata'])
+
+        print(str(noofauthor)+"   "+str(no_old_author)+"   "+str(no_new_author))
+        if (int(no_new_author + no_old_author) != int(noofauthor)):
+            raise Exception
+        if (len(author_list_id) != int(no_old_author)):
+            raise Exception
+        for i in range (no_new_author):
+             print(i)
+             author_list_id.append(int(addauthor(new_author_data[i])))
+
+        print(author_list_id)
+        for i in range(0,int(jsondata['noofauthor'])):
+            print(author_list_id[i])
+            query1 = "insert into project_author values("+str(author_list_id[i])+", "+ str(result)+")"
+            result1 = (db.query(query1, 2))
+            if (result1 is not 'Finished'):
+                raise Exception
+        print(author_list_id)
+        return jsonify({'msg': author_list_id }), 200
+    except Exception as e:
+        return jsonify({'msg': "No data present "+str(e)}), 401
 
 
 
 
 
-# @app.route('/user/paper')
-# @token_required
-# def paper(data):
-#     try:
-#         jsondata = request.get_data().decode("utf-8")
-#         jsondata = json.loads(jsondata)
-#
-#         if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
-#             raise Exception
-#         query =  "SELECT * FROM [dbo].[research_paper] WHERE paper_pkey ="+ jsondata['paperid']+" AND Euid ='"+data['user']+"'"
-#         result = db.query(query,0)
-#         return jsonify({'Status': result}), 200
-#
-#     except Exception as e:
-#         return jsonify({'msg': "No data present " + str(e)}), 401
+@app.route('/user/upload/Honors_and_Award',methods=['POST']  )
+@token_required
+def Accomplishmentuploadhonor(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if not db.check(jsondata['Title'])  or not db.check(jsondata['Issuer'])  \
+                or not db.check(jsondata['Date'])or not db.check(jsondata['Description']) \
+                 or jsondata['Title']==''  or jsondata['Issuer']==''  \
+                or jsondata['Date']==''or jsondata['Description']==''   or \
+                jsondata['Title']is None  or jsondata['Issuer'] is None  \
+                or jsondata['Date']is None or  jsondata['Description'] is None:
+            raise Exception
+        if(db.query(" SELECT CASE WHEN EXISTS (select * from Honors_and_Award where Euid='"+data['user']+"' and title='"+jsondata['Title']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "Dublicate entry " }), 401
+        query1 = "insert into Honors_and_Award values('"+data['user']+"','"+jsondata['Title']+"','"+jsondata['Issuer']+"','"+jsondata['Date']+"','"+jsondata['Description']+"' ) "
+        result=(db.query(query1,2))
+        if(result is not 'Finished'):
+            raise Exception
+        print(result)
+        return jsonify({'msg': "inserted" }), 200
+    except Exception as e:
+        return jsonify({'msg': "No data present "+str(e)}), 401
+
+
+
+
+
+
+
+
+@app.route('/user/upload/Patent',methods=['POST']  )
+@token_required
+def Accomplishmentuploadpatent(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+# 'noofauthor'  'Type'  'author'
+        if not db.check(jsondata['noofauthor']) or not db.check(jsondata['Title'])    \
+                or not db.check(jsondata['Date'])or not db.check(jsondata['Description'])or not db.check(jsondata['Patent_office']) \
+                or not db.check(jsondata['Application_no']) or jsondata['noofauthor']=='' or jsondata['Title']==''     \
+                or jsondata['Date']==''or jsondata['Description']=='' or jsondata['Patent_office']=='' or jsondata['Application_no']=='' or jsondata['noofauthor'] is None or \
+                jsondata['Title']is None or   jsondata['Patent_office']is None or jsondata['Application_no']is None    \
+                or jsondata['Date']is None or  jsondata['Description'] is None:
+            raise Exception("22")
+        if(db.query(" SELECT CASE WHEN EXISTS (select * from [Patent] where Euid='"+data['user']+"' and Application_no='"+jsondata['Application_no']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "Dublicate entry " }), 401
+        query1 = "insert into [Patent] values('"+jsondata['Title']+"','"+jsondata['Patent_office']+"','"+jsondata['Application_no']+"','"+jsondata['Date']+"','"+jsondata['Description']+"','"+jsondata['url']+"','"+data['user']+"') "
+        result=(db.query(query1,2))
+        print(query1)
+        if(result is not 'Finished'):
+            raise Exception
+        result = str(db.query("select SCOPE_IDENTITY();", 1))
+        result = result[11:-5]
+        result = int(result)
+        author_list_id = list(jsondata['author'])
+        noofauthor=int(jsondata['noofauthor'])
+        author_type_list =jsondata['typeofauthor']
+        no_new_author =author_type_list.count(1)
+        no_old_author =author_type_list.count(0)
+        new_author_data = (jsondata['authordata'])
+
+        print(str(noofauthor)+"   "+str(no_old_author)+"   "+str(no_new_author))
+        if (int(no_new_author + no_old_author) != int(noofauthor)):
+            raise Exception
+        if (len(author_list_id) != int(no_old_author)):
+            raise Exception
+        for i in range (no_new_author):
+             print(i)
+             author_list_id.append(int(addauthor(new_author_data[i])))
+
+        print(author_list_id)
+        for i in range(0,int(jsondata['noofauthor'])):
+            print(author_list_id[i])
+            query1 = "insert into [patent_author] values("+str(author_list_id[i])+", "+ str(result)+")"
+            print(query1)
+            result1 = (db.query(query1, 2))
+            if (result1 is not 'Finished'):
+                raise Exception
+        print(author_list_id)
+        return jsonify({'msg': author_list_id }), 200
+    except Exception as e:
+        return jsonify({'msg': "No data present "+str(e)}), 401
+
+
+
+
+
+
+
+
+
+
+@app.route('/test')
+def test():
+    jsondata = request.get_data().decode("utf-8")
+    jsondata = json.loads(jsondata)
+    data  = (jsondata['authordata'])
+    print(str(addauthor(data[0]))+"yayay")
+    # print(data[1])
+    return  jsonify({'msg':"asadsas"}), 200
+
+
+
+
+
+
+def addauthor(list):
+    try:
+        result =authorsearch1(list)
+        print(result)
+        if(result is None):
+            result = (db.query("insert into author values('"+list[0]+"','"+list[1]+"','"+list[2]+"' )", 2))
+            if result is not 'Finished':
+                raise Exception
+
+            result1 = (db.query("select SCOPE_IDENTITY()", 0))
+            # result1 = int(result1[11:-5])
+            print(result)
+            print(result1)
+            return result1[0]
+        return result
+    except Exception as e:
+        return "ddfsd"+str(e)
+
+def authorsearch1(list):
+    try:
+
+        if list[1]==''or list is None or list[1] is None or not db.Email_check(list[1]):
+            raise Exception
+        query1 = "SELECT [Aid] FROM [dbo].[Author] WHERE Email = '" + list[1] + "'"
+        result = (db.query(query1, 0))
+        if (result is None or result == ''):
+            return None
+        result = result[0]
+        print(result)
+
+
+        return result
+    except Exception as e:
+        return  str(e)
+
+
+
+
 
 def verifypassword(data,id,type):
     if (type == 'Publication'):
@@ -328,7 +553,7 @@ def verifypassword(data,id,type):
 
     elif (type == 'Project'):
         try:
-            result = db.query("  SELECT CASE WHEN EXISTS (SELECT * from Project_1 where Euid ='"+data['user']+"' and pid = '"+id+"') THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)
+            result = db.query("SELECT CASE WHEN EXISTS (SELECT * from Project_1 where Euid ='"+data['user']+"' and pid = '"+id+"') THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)
             print(result)
             if (result[0]):
                 return True
@@ -410,3 +635,48 @@ def verifypassword(data,id,type):
 #             return jsonify({'msg': 'inserted', }), 200
 #         except Exception as e:
 #              return jsonify({'msg': str(e)}), 401
+
+# type_check = ('Name','Email','Password','Phone_No','Qualifications','University',)
+#
+# @app.route('/update/<type>' ,methods=['POST'] )
+# @token_required
+# def update(data,type):
+#     try:
+#         jsondata = request.get_data().decode("utf-8")
+#         jsondata = json.loads(jsondata)
+#         if jsondata[type]==''or jsondata is None or jsondata[type] is None:
+#             raise Exception
+#         if type not in type_check:
+#            raise Exception
+#         if type=='' or type is None or type=="" or not db.check(type):
+#             return Exception
+#     except Exception as e:
+#         return jsonify({'msg': "No data present " + str(e)}), 401
+#     query  = "UPDATE [dbo].[user_info] SET "+type+ " = '"+jsondata[type]+"' WHERE Euid = '"+ data['user']  +"';"
+#     result = (db.query(query, 2))
+#     if(result == 'Finished'):
+#         return jsonify({'msg': 'updated'}), 200
+#     return jsonify({'msg': 'updated'}), 405
+#
+#
+
+
+
+
+
+
+# @app.route('/user/paper')
+# @token_required
+# def paper(data):
+#     try:
+#         jsondata = request.get_data().decode("utf-8")
+#         jsondata = json.loads(jsondata)
+#
+#         if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
+#             raise Exception
+#         query =  "SELECT * FROM [dbo].[research_paper] WHERE paper_pkey ="+ jsondata['paperid']+" AND Euid ='"+data['user']+"'"
+#         result = db.query(query,0)
+#         return jsonify({'Status': result}), 200
+#
+#     except Exception as e:
+#         return jsonify({'msg': "No data present " + str(e)}), 401
