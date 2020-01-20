@@ -245,24 +245,23 @@ def authorlist(data):
 
 
 
-@app.route('/Verify/password',methods=['POST']  )
-@token_required
-def verifypassword1(data):
+
+def verifypassword1(data,jsondata):
     try:
-        jsondata = request.get_data().decode("utf-8")
-        jsondata = json.loads(jsondata)
+
 
         if jsondata['password']==''or jsondata is None or jsondata['password'] is None or not db.check(jsondata['password']):
             raise Exception
+
+
+        query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + data['user'] + "'"
+        result = (db.query(query1, 0))
+        if jsondata['password']==result[0]:
+            return True
+
+        return False
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
-
-    query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + data['user'] + "'"
-    result = (db.query(query1, 0))
-    if jsondata['password']==result[0]:
-        return jsonify({'msg': 'password verified'}), 200
-
-    return jsonify({'msg': "wrongpassword"}), 401
+        return False
 
 
 
@@ -479,6 +478,71 @@ def Accomplishmentuploadpatent(data):
 
 
 
+
+
+
+
+@app.route('/user/upload',methods=['DELETE']  )
+@token_required
+def Accomplishmentdelete(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+# 'noofauthor'  'Type'  'id' 'author_id'
+        print(jsondata["Type"])
+        print("HonorsandAward")
+        print(jsondata['Type']=="HonorsandAward")
+        if  not db.check(jsondata['Type']) or not db.check(jsondata['password'])    \
+                or not db.check(jsondata['id'])or jsondata['Type']==''or jsondata['id']==''or jsondata['password']=='' or \
+                jsondata['Type'] is None or jsondata['id']is None or jsondata['password']is None  :
+            raise Exception("   1   ")
+        if(not verifypassword1(data,jsondata)):
+            return   jsonify({'msg': "incorrect password"}), 401
+        if(jsondata["Type"]=='Project'):
+            query = "SELECT CASE WHEN EXISTS (select * from [Project_1] where Euid='"+data['user']+"' and Pid='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            query1 = "SELECT CASE WHEN EXISTS (select * from [project_author] where Pid='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            delquery = " DELETE from [Project_1] where Euid='" + data['user'] + "' and Pid='" +jsondata['id'] + "'"
+            delquery1 = " DELETE from [project_author] where Pid='" + jsondata['id'] + "'"
+        elif(jsondata["Type"]=='Publication'):
+            query = "SELECT CASE WHEN EXISTS (select * from [Publication] where Euid='"+data['user']+"' and pu_id='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            query1 = "SELECT CASE WHEN EXISTS (select * from [publication_author] where  pu_id='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            delquery = " DELETE from [publication ] where Euid='" + data['user'] + "' and pu_id='" + jsondata['id'] + "'"
+            delquery1 = " DELETE from [publication_author] where pu_id='" + jsondata['id'] + "'"
+
+        elif(jsondata["Type"]=="Patent"):
+            query = "SELECT CASE WHEN EXISTS (select * from [Patent] where Euid='"+data['user']+"' and pa_id='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            query1 = "SELECT CASE WHEN EXISTS (select * from [patent_author] where pa_id='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            delquery = " DELETE from [Patent] where Euid='" + data['user'] + "' and pa_id='" + jsondata['id'] + "'"
+            delquery1 = " DELETE from [patent_author] where pa_id='" + jsondata['id'] + "'"
+
+        elif(jsondata["Type"]=="HonorsandAward"):
+            query = "SELECT CASE WHEN EXISTS (select * from [Honors_and_Award] where Euid='"+data['user']+"' and PKEY='"+jsondata['id']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
+            query1=''
+            delquery = " DELETE from [Honors_and_Award] where Euid='" + data['user'] + "' and PKEY ='" + jsondata['id'] + "'"
+            delquery1 = ''
+
+        else:
+            return  jsonify({'msg': "Wrong type"}), 401
+        print(query)
+        print(db.query(query, 0)[0])
+        print(query1)
+        print(delquery)
+        print(delquery1)
+        if (not db.query(query, 0)[0]):
+            return jsonify({'msg': "Does not exist "}), 401
+        if(query1 != ''):
+            if (not db.query(query1, 0)[0]):
+                return jsonify({'msg': "Author not exist "}), 401
+
+        if (delquery1 != ""):
+            result = db.query(delquery1 , 2)
+            print(result)
+
+        result1 = db.query(delquery, 2)
+        print(result1)
+        return jsonify({'msg': "Deleted" }), 200
+    except Exception as e:
+        return jsonify({'msg': "No data present "+str(e)}), 401
 
 
 
