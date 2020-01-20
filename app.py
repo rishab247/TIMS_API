@@ -114,7 +114,7 @@ def register():
         query1 = query1 + "'" + data['DOB'] + "'" + ");"
         query2 = "INSERT INTO [dbo].[Status] VALUES ("
         query2 = query2 + "'" + data['Euid'] + "',"
-        query2 = query2 + "0,0,"
+        query2 = query2 + "0,"+ data['type']+","
         query2 = query2 + "'" + data['Name'] + "',"
         query2 = query2 + "'" + data['Hod_Department'] + "');"
         result1 = (db.query(query1, 2))
@@ -234,7 +234,6 @@ def authorlist(data):
         if jsondata['paperid'] == '' or jsondata is None or jsondata['paperid'] is None or not db.check( jsondata['paperid']):
             raise Exception
         query =  "SELECT * FROM [dbo].[Paper_author] WHERE Paper_key ="+ jsondata['paperid']
-        print(query)
         result = db.query(query,1)
         return jsonify({'Status': result}), 200
 
@@ -489,9 +488,7 @@ def Accomplishmentdelete(data):
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
 # 'noofauthor'  'Type'  'id' 'author_id'
-        print(jsondata["Type"])
-        print("HonorsandAward")
-        print(jsondata['Type']=="HonorsandAward")
+
         if  not db.check(jsondata['Type']) or not db.check(jsondata['password'])    \
                 or not db.check(jsondata['id'])or jsondata['Type']==''or jsondata['id']==''or jsondata['password']=='' or \
                 jsondata['Type'] is None or jsondata['id']is None or jsondata['password']is None  :
@@ -523,11 +520,7 @@ def Accomplishmentdelete(data):
 
         else:
             return  jsonify({'msg': "Wrong type"}), 401
-        print(query)
-        print(db.query(query, 0)[0])
-        print(query1)
-        print(delquery)
-        print(delquery1)
+
         if (not db.query(query, 0)[0]):
             return jsonify({'msg': "Does not exist "}), 401
         if(query1 != ''):
