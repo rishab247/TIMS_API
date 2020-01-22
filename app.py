@@ -60,9 +60,10 @@ def Alert():
 @token_required
 def Verify(data):
 
-    query = "SELECT  [Status] FROM [dbo].[Status]where Euid = '" + data['user'] + "' "
+    query = "SELECT  [Status] ,[HOD] FROM [dbo].[Status]where Euid = '" + data['user'] + "' "
     result = db.query(query, 0)
-    return jsonify({'Status': result[0]}), 200
+    return jsonify({'Status': result[0],
+                    'Hod':result[1]}), 200
 
 
 @app.route('/login')
@@ -240,27 +241,6 @@ def authorlist(data):
     except Exception as e:
         return jsonify({'msg': "No data present " + str(e)}), 401
 
-
-
-
-
-
-def verifypassword1(data,jsondata):
-    try:
-
-
-        if jsondata['password']==''or jsondata is None or jsondata['password'] is None or not db.check(jsondata['password']):
-            raise Exception
-
-
-        query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + data['user'] + "'"
-        result = (db.query(query1, 0))
-        if jsondata['password']==result[0]:
-            return True
-
-        return False
-    except Exception as e:
-        return False
 
 
 
@@ -538,6 +518,56 @@ def Accomplishmentdelete(data):
         return jsonify({'msg': "No data present "+str(e)}), 401
 
 
+#
+# @app.route('/user/Profile', methods=['PUT'])
+# @token_required
+# def updateuserdata(data):
+#     try:
+#         if not (db.query(" SELECT CASE WHEN EXISTS (select * from [user_info] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+#             return jsonify({'msg': "User doen't exist"}), 401
+#         jsondata = request.get_data().decode("utf-8")
+#         jsondata = json.loads(jsondata)
+#         if not db.check(jsondata['password']) or not db.check(jsondata['new_password'])or not db.check(jsondata['Department_Name']) \
+#                 or not db.check(jsondata['phoneno']) or not db.check(jsondata['Qualification']) or not db.check(jsondata['University']) or\
+#                  jsondata['Department_Name'] == '' or jsondata['Qualification'] == ''or jsondata['University'] == ''or jsondata['phoneno'] == '' or \
+#                  jsondata['Department_Name'] is None or jsondata['Qualification'] is None or jsondata['University'] is None or jsondata['phoneno'] is None:
+#             return jsonify({'msg': "Not Allowed"}), 405
+#
+#         if not verifypassword1(data,jsondata):
+#             return jsonify({'msg': "Wrong Password  "}), 401
+#         query = "UPDATE [dbo].[user_info] SET [Phone_No] = '"+jsondata['phoneno']+"',[Department_Name] = '"+jsondata["Department_Name"]\
+#                 +"',[Qualifications] = '"+jsondata["Qualification"]+"',[University] = '"+jsondata['University']+"' WHERE [Euid] =	'"+data['user']+"' "
+#         result  =  db.query(query,2)
+#         print (result)
+#         return jsonify({'msg': result}), 200
+#     except Exception as e:
+#         return jsonify({'msg': "Error "+str(e)}), 401
+#
+#
+#
+#
+#
+#
+# @app.route('/Verify/password', methods=['PUT'])
+# @token_required
+# def verifypassword1(data):
+#     try:
+#         jsondata = request.get_data().decode("utf-8")
+#         jsondata = json.loads(jsondata)
+#         if not db.check(jsondata['password']) or not db.check(jsondata['new_password'])or\
+#                  jsondata['password'] == '' or jsondata['new_password'] == '' or \
+#                  jsondata['password'] is None or jsondata['new_password'] is None :
+#             return jsonify({'msg': "Not Allowed"}), 405
+#         if not (db.query(" SELECT CASE WHEN EXISTS (select * from [user_info] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+#             return jsonify({'msg': "User doen't exist"}), 401
+#         if not verifypassword1(data,jsondata):
+#             return jsonify({'msg': "Wrong Password  "}), 401
+#         query = "UPDATE [dbo].[user_info] SET  [Password] = '" + jsondata["new_password"] +"' WHERE [Euid] =	'" + data['user'] + "' "
+#         result = db.query(query, 2)
+#         print(result)
+#         return jsonify({'msg': result}), 200
+#     except Exception as e:
+#         return jsonify({'msg': "Error "+str(e)}), 401
 
 
 
@@ -591,10 +621,6 @@ def authorsearch1(list):
     except Exception as e:
         return  str(e)
 
-
-
-
-
 def verifypassword(data,id,type):
     if (type == 'Publication'):
         try:
@@ -646,6 +672,28 @@ def verifypassword(data,id,type):
     else:
         return False
 
+def verifypassword1(data,jsondata):
+    try:
+
+
+        if jsondata['password']==''or jsondata is None or jsondata['password'] is None or not db.check(jsondata['password']):
+            raise Exception
+
+
+        query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + data['user'] + "'"
+        result = (db.query(query1, 0))
+        if jsondata['password']==result[0]:
+            return True
+
+        return False
+    except Exception as e:
+        return False
+
+
+
+
+
+
 # extra code
 # def run_query(query1):d
 #     try:
@@ -680,7 +728,7 @@ def verifypassword(data,id,type):
 #             return str(e)
 
 
-#
+
 # def register_query(query1,query2):
 #
 #         try:
