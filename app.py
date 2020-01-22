@@ -163,7 +163,7 @@ def useraccomplishment(data):
     except Exception as e:
         return jsonify({'msg': "No data present " + str(e)}), 401
 
-@app.route('/user/Accomplishmen/Details')
+@app.route('/user/Accomplishmen/Details',methods=['POST'])
 @token_required
 def userAccomplishmenDetails(data):
     try:
