@@ -27,7 +27,8 @@ def token_required(f):
             return jsonify({'msg': 'token req', }), 401
 
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
+            # data = jwt.decode(token, app.config['SECRET_KEY'])
+            data = "1"
         except:
             return jsonify({'msg': 'token is not valid', }), 401
         return f(data, *args, **kwargs)
@@ -76,6 +77,9 @@ def login():
             return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
         if not db.check(auth.username) or not db.check(auth.password):
             return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+        print("Username  "+auth.username)
+        print("Password  "+auth.password)
+        print(auth)
         query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + auth.username + "'"
         query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '" + auth.username + "' "
         result = (db.query(query1, 0))
@@ -174,6 +178,7 @@ def userAccomplishmenDetails(data):
             try:
                 result = db.query("SELECT  * FROM [dbo].[Publication] where Pu_id = '" + jsondata['id'] + "' ", 0)
                 result1 = db.query(" select * from author where aid in ( select aid from publication_author where Pu_id ='"+jsondata['id']+"')", 1)
+
                 if(result1==None or result==None or result1=='None' or result=='None'):
                     raise Exception
                 if(not verifypassword(data, jsondata['id'],jsondata['Type'] )):
@@ -467,7 +472,7 @@ def Accomplishmentdelete(data):
     try:
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
-# 'noofauthor'  'Type'  'id' 'author_id'
+# 'noofauthor'  'Type'  'id'
 
         if  not db.check(jsondata['Type']) or not db.check(jsondata['password'])    \
                 or not db.check(jsondata['id'])or jsondata['Type']==''or jsondata['id']==''or jsondata['password']=='' or \
@@ -518,56 +523,55 @@ def Accomplishmentdelete(data):
         return jsonify({'msg': "No data present "+str(e)}), 401
 
 
-#
-# @app.route('/user/Profile', methods=['PUT'])
-# @token_required
-# def updateuserdata(data):
-#     try:
-#         if not (db.query(" SELECT CASE WHEN EXISTS (select * from [user_info] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
-#             return jsonify({'msg': "User doen't exist"}), 401
-#         jsondata = request.get_data().decode("utf-8")
-#         jsondata = json.loads(jsondata)
-#         if not db.check(jsondata['password']) or not db.check(jsondata['new_password'])or not db.check(jsondata['Department_Name']) \
-#                 or not db.check(jsondata['phoneno']) or not db.check(jsondata['Qualification']) or not db.check(jsondata['University']) or\
-#                  jsondata['Department_Name'] == '' or jsondata['Qualification'] == ''or jsondata['University'] == ''or jsondata['phoneno'] == '' or \
-#                  jsondata['Department_Name'] is None or jsondata['Qualification'] is None or jsondata['University'] is None or jsondata['phoneno'] is None:
-#             return jsonify({'msg': "Not Allowed"}), 405
-#
-#         if not verifypassword1(data,jsondata):
-#             return jsonify({'msg': "Wrong Password  "}), 401
-#         query = "UPDATE [dbo].[user_info] SET [Phone_No] = '"+jsondata['phoneno']+"',[Department_Name] = '"+jsondata["Department_Name"]\
-#                 +"',[Qualifications] = '"+jsondata["Qualification"]+"',[University] = '"+jsondata['University']+"' WHERE [Euid] =	'"+data['user']+"' "
-#         result  =  db.query(query,2)
-#         print (result)
-#         return jsonify({'msg': result}), 200
-#     except Exception as e:
-#         return jsonify({'msg': "Error "+str(e)}), 401
-#
-#
-#
-#
-#
-#
-# @app.route('/Verify/password', methods=['PUT'])
-# @token_required
-# def verifypassword1(data):
-#     try:
-#         jsondata = request.get_data().decode("utf-8")
-#         jsondata = json.loads(jsondata)
-#         if not db.check(jsondata['password']) or not db.check(jsondata['new_password'])or\
-#                  jsondata['password'] == '' or jsondata['new_password'] == '' or \
-#                  jsondata['password'] is None or jsondata['new_password'] is None :
-#             return jsonify({'msg': "Not Allowed"}), 405
-#         if not (db.query(" SELECT CASE WHEN EXISTS (select * from [user_info] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
-#             return jsonify({'msg': "User doen't exist"}), 401
-#         if not verifypassword1(data,jsondata):
-#             return jsonify({'msg': "Wrong Password  "}), 401
-#         query = "UPDATE [dbo].[user_info] SET  [Password] = '" + jsondata["new_password"] +"' WHERE [Euid] =	'" + data['user'] + "' "
-#         result = db.query(query, 2)
-#         print(result)
-#         return jsonify({'msg': result}), 200
-#     except Exception as e:
-#         return jsonify({'msg': "Error "+str(e)}), 401
+@app.route('/user/Profile', methods=['PUT'])
+@token_required
+def updateuserdata(data):
+    try:
+        if not (db. query(" SELECT CASE WHEN EXISTS (select * from [user_info] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "User doen't exist"}), 401
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if not db.check(jsondata['password']) or  not db.check(jsondata['Department_Name']) \
+                or not db.check(jsondata['phoneno']) or not db.check(jsondata['Qualification']) or not db.check(jsondata['University']) or\
+                 jsondata['Department_Name'] == '' or jsondata['Qualification'] == ''or jsondata['University'] == ''or jsondata['phoneno'] == '' or \
+                 jsondata['Department_Name'] is None or jsondata['Qualification'] is None or jsondata['University'] is None or jsondata['phoneno'] is None:
+            return jsonify({'msg': "Not Allowed"}), 405
+
+        if not verifypassword1(data,jsondata):
+            return jsonify({'msg': "Wrong Password  "}), 401
+        query = "UPDATE [dbo].[user_info] SET [Phone_No] = '"+jsondata['phoneno']+"',[Department_Name] = '"+jsondata["Department_Name"]\
+                +"',[Qualifications] = '"+jsondata["Qualification"]+"',[University] = '"+jsondata['University']+"' WHERE [Euid] =	'"+data['user']+"' "
+        result  =  db.query(query,2)
+        print (result)
+        return jsonify({'msg': result}), 200
+    except Exception as e:
+        return jsonify({'msg': "Error "+str(e)}), 401
+
+
+
+
+
+
+@app.route('/Verify/password', methods=['PUT'])
+@token_required
+def verifypassword1(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if not db.check(jsondata['password']) or not db.check(jsondata['new_password'])or\
+                 jsondata['password'] == '' or jsondata['new_password'] == '' or \
+                 jsondata['password'] is None or jsondata['new_password'] is None :
+            return jsonify({'msg': "Not Allowed"}), 405
+        if not (db.query(" SELECT CASE WHEN EXISTS (select * from [user_info] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "User doen't exist"}), 401
+        if not verifypassword1(data,jsondata):
+            return jsonify({'msg': "Wrong Password  "}), 401
+        query = "UPDATE [dbo].[user_info] SET  [Password] = '" + jsondata["new_password"] +"' WHERE [Euid] =	'" + data['user'] + "' "
+        result = db.query(query, 2)
+        print(result)
+        return jsonify({'msg': result}), 200
+    except Exception as e:
+        return jsonify({'msg': "Error "+str(e)}), 401
 
 
 
