@@ -27,8 +27,7 @@ def token_required(f):
             return jsonify({'msg': 'token req', }), 401
 
         try:
-            # data = jwt.decode(token, app.config['SECRET_KEY'])
-            data = "1"
+            data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
             return jsonify({'msg': 'token is not valid', }), 401
         return f(data, *args, **kwargs)
@@ -77,9 +76,6 @@ def login():
             return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
         if not db.check(auth.username) or not db.check(auth.password):
             return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-        print("Username  "+auth.username)
-        print("Password  "+auth.password)
-        print(auth)
         query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + auth.username + "'"
         query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '" + auth.username + "' "
         result = (db.query(query1, 0))
@@ -472,7 +468,7 @@ def Accomplishmentdelete(data):
     try:
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
-# 'noofauthor'  'Type'  'id'
+# 'noofauthor'  'Type'  'id' 'author_id'
 
         if  not db.check(jsondata['Type']) or not db.check(jsondata['password'])    \
                 or not db.check(jsondata['id'])or jsondata['Type']==''or jsondata['id']==''or jsondata['password']=='' or \
