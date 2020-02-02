@@ -63,7 +63,7 @@ def Verify(data):
     query = "SELECT  [Status] ,[HOD] FROM [dbo].[Status]where Euid = '" + data['user'] + "' "
     result = db.query(query, 0)
     return jsonify({'Status': result[0],
-                    'Hod':result[1]}), 200
+                    'Hod'   :result[1]}), 200
 
 
 @app.route('/login')
@@ -101,7 +101,13 @@ def register():
                 not db.check(data['Phone_No']) or not db.check(data['Department_Name']) or not db.check(data['DOJ']) or \
                 not db.check(data['Qualifications']) or not db.check(data['University']) or not db.check(data['DOB'])or \
                 not db.check(data['Hod_Department']):
-            raise Exception
+            raise Exception("format")
+        if    (db.query("SELECT CASE WHEN EXISTS (select * from user_info where Euid='" + data[
+            'Euid'] + "' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+            return jsonify({'msg': "Dublicate Euid "}), 401
+        if    (db.query("SELECT CASE WHEN EXISTS (select * from user_info where Email='" + data[
+            'Email'] + "' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+             return jsonify({'msg': "Dublicate Email "}), 401
         query1 = "INSERT INTO [dbo].[user_info] VALUES ("
         query1 = query1 + "'" + data['Euid'] + "',"
         query1 = query1 + "'" + data['Name'] + "',"
