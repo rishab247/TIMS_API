@@ -205,7 +205,7 @@ def userAccomplishmenDetails(data):
         elif (jsondata['Type'] == 'Patent'):
             try:
                 result = db.query("SELECT  * FROM [dbo].[Patent] where Pa_id = '" + jsondata['id'] + "' ", 0)
-                result1 = db.query(" select * from author where aid in ( select aid from Patent where Pa_id ='" + jsondata['id'] + "')", 1)
+                result1 = db.query(" select * from author where aid in ( select aid from patent_author where Pa_id ='" + jsondata['id'] + "')", 1)
                 if(result1==None or result==None or result1=='None' or result=='None'):
                     raise Exception
                 if(not verifypassword(data, jsondata['id'],jsondata['Type']  )):
