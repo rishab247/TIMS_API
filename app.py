@@ -139,7 +139,12 @@ def userdata(data):
     query = "SELECT [Euid],[Name],[Email],[Phone_No],[Department_Name],[DOJ],[Qualifications],[University],[DOB] FROM [dbo].[user_info]where Euid = '" + data['user'] + "' "
     result = db.query(query, 0)
     print(result)
-    return jsonify({'Status': (result)}), 200
+    result1='noimage'
+    if (db.query("SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid='" + data['user'] + "' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+        query = "select Image from [Profile_image] where Euid ='"+data['user']+"'"
+        result1 = db.query(query, 1)
+        result1 = str(result1[0])[13:-4]
+    return jsonify({'Status': (result),'pic':result1}), 200
 
 @app.route('/user/Accomplishment')
 @token_required
@@ -535,8 +540,8 @@ def updateuserdata(data):
         jsondata = json.loads(jsondata)
         if not db.check(jsondata['password']) or  not db.check(jsondata['Department_Name']) \
                 or not db.check(jsondata['phoneno']) or not db.check(jsondata['Qualification']) or not db.check(jsondata['University']) or\
-                 jsondata['Department_Name'] == '' or jsondata['Qualification'] == ''or jsondata['University'] == ''or jsondata['phoneno'] == '' or \
-                 jsondata['Department_Name'] is None or jsondata['Qualification'] is None or jsondata['University'] is None or jsondata['phoneno'] is None:
+                 jsondata['Department_Name'] == '' or jsondata['Qualification'] == ''or jsondata['University'] == ''or jsondata['pic'] == ''or jsondata['phoneno'] == '' or \
+                 jsondata['Department_Name'] is None or jsondata['pic'] is None or jsondata['Qualification'] is None or jsondata['University'] is None or jsondata['phoneno'] is None:
             return jsonify({'msg': "Not Allowed"}), 405
 
         if not verifypassword1(data,jsondata):
@@ -544,8 +549,17 @@ def updateuserdata(data):
         query = "UPDATE [dbo].[user_info] SET [Phone_No] = '"+jsondata['phoneno']+"',[Department_Name] = '"+jsondata["Department_Name"]\
                 +"',[Qualifications] = '"+jsondata["Qualification"]+"',[University] = '"+jsondata['University']+"' WHERE [Euid] =	'"+data['user']+"' "
         result  =  db.query(query,2)
+        result1='Finished'
+        if jsondata['pic']!='noimage' and result=='Finished':
+            if  (db.query("SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid='"+data['user']+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
+                    query = "UPDATE [dbo].[Profile_image] SET [Image] = '"+jsondata['pic']+"'WHERE Euid = '"+data['user']+"'"
+            else:
+                query  = "INSERT INTO [dbo].[Profile_image] VALUES('"+ data['user']+"','"+ jsondata['pic']+"')"
+            result1 = db.query(query, 2)
+            print(result1)
         print (result)
-        return jsonify({'msg': result}), 200
+
+        return jsonify({'msg': result,'msg1': result1}), 200
     except Exception as e:
         return jsonify({'msg': "Error "+str(e)}), 401
 
@@ -578,14 +592,27 @@ def verifypassword1(data):
 
 
 
-@app.route('/test')
-def test():
+@app.route('/upload/pic',methods=['GET'])
+@token_required
+def test(data):
+    # pic   bool
     jsondata = request.get_data().decode("utf-8")
     jsondata = json.loads(jsondata)
-    data  = (jsondata['authordata'])
-    print(str(addauthor(data[0]))+"yayay")
-    # print(data[1])
-    return  jsonify({'msg':"asadsas"}), 200
+    if jsondata['pic'] == '' or jsondata['bool'] == '' or \
+                 jsondata['pic'] is None or jsondata['bool'] is None :
+        return jsonify({'msg': "Not Allowed"}), 405
+
+    pic  = (jsondata['pic'])
+
+
+
+
+
+
+
+
+
+
 
 
 
