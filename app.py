@@ -139,11 +139,13 @@ def userdata(data):
     query = "SELECT [Euid],[Name],[Email],[Phone_No],[Department_Name],[DOJ],[Qualifications],[University],[DOB] FROM [dbo].[user_info]where Euid = '" + data['user'] + "' "
     result = db.query(query, 0)
     print(result)
-    result1='noimage'
+    result1=list('noimage')
+    print(result1)
     if (db.query("SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid='" + data['user'] + "' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
         query = "select Image from [Profile_image] where Euid ='"+data['user']+"'"
         result1 = db.query(query, 1)
         result1 = str(result1[0])[13:-4]
+        result1 = result1.strip().split(" ")
     return jsonify({'Status': (result),'pic':result1}), 200
 
 @app.route('/user/Accomplishment')
