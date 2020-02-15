@@ -27,6 +27,7 @@ def token_required(f):
             return jsonify({'msg': 'token req', }), 401
 
         try:
+            (db.getconnection())
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
             return jsonify({'msg': 'token is not valid', }), 401
@@ -68,28 +69,30 @@ def Verify(data):
 
 @app.route('/login')
 def login():
-
-        auth = request.authorization
-        if auth is None:
-            return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-        if auth.username == '' or auth.password == '':
-            return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-        if not db.check(auth.username) or not db.check(auth.password):
-            return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-        query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + auth.username + "'"
-        query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '" + auth.username + "' "
-        result = (db.query(query1, 0))
-        result1 = (db.query(query2, 0))
-        if result is None:
-            return jsonify({'msg': 'incorrect username'}), 401
-        if auth and auth.password == result[0]:
-            token = jwt.encode({'user': auth.username, 'HOD': result1[0],
-                                'hod_department': result1[1],
-                                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
-                               app.config['SECRET_KEY'])
-            return jsonify({'token': token.decode('UTF-8')})
-        return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-
+       try:
+           print(db.getconnection())
+           auth = request.authorization
+           if auth is None:
+               return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+           if auth.username == '' or auth.password == '':
+               return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+           if not db.check(auth.username) or not db.check(auth.password):
+               return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+           query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + auth.username + "'"
+           query2 = "SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = '" + auth.username + "' "
+           result = (db.query(query1, 0))
+           result1 = (db.query(query2, 0))
+           if result is None:
+               return jsonify({'msg': 'incorrect username'}), 401
+           if auth and auth.password == result[0]:
+               token = jwt.encode({'user': auth.username, 'HOD': result1[0],
+                                   'hod_department': result1[1],
+                                   'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
+                                  app.config['SECRET_KEY'])
+               return jsonify({'token': token.decode('UTF-8')})
+           return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
+       except:
+           return jsonify({"msg": str(e)}), 401
 
 
 @app.route('/register', methods=['POST'])
@@ -139,7 +142,8 @@ def userdata(data):
     query = "SELECT [Euid],[Name],[Email],[Phone_No],[Department_Name],[DOJ],[Qualifications],[University],[DOB] FROM [dbo].[user_info]where Euid = '" + data['user'] + "' "
     result = db.query(query, 0)
     print(result)
-    result1=list('noimage')
+    a ="noimage"
+    result1=a.split(" ")
     print(result1)
     if (db.query("SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid='" + data['user'] + "' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)[0]):
         query = "select Image from [Profile_image] where Euid ='"+data['user']+"'"
@@ -594,26 +598,45 @@ def verifypassword1(data):
 
 
 
-@app.route('/upload/pic',methods=['GET'])
+@app.route('/report/download',methods=['GET'])
 @token_required
-def test(data):
-    # pic   bool
-    jsondata = request.get_data().decode("utf-8")
-    jsondata = json.loads(jsondata)
-    if jsondata['pic'] == '' or jsondata['bool'] == '' or \
-                 jsondata['pic'] is None or jsondata['bool'] is None :
-        return jsonify({'msg': "Not Allowed"}), 405
+def download(data):
+    # dateend   datestart
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        int(jsondata['dateend'])
+        int(jsondata['datestart'])
 
-    pic  = (jsondata['pic'])
+        if not db.check(jsondata['dateend']) or not db.check(jsondata['datestart']) or \
+                jsondata['dateend'] == '' or jsondata['datestart'] == '' or \
+                jsondata['dateend'] is None or jsondata['datestart'] is None:
+            return jsonify({'msg': "Not Allowed"}), 405
+        query = "select patent.Pa_id,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent where Euid='" + \
+                data[
+                    'user'] + "')) and author.aid=patent_author.Aid and patent.pa_id=patent_author.pa_id and date BETWEEN '" + \
+                jsondata['datestart'] + "'  and '" + jsondata['dateend'] + "'"
+        query1 = "select project_author.Pid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 where Euid='" + \
+                 data[
+                     'user'] + "')) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and date BETWEEN '" + \
+                 jsondata['datestart'] + "'  and '" + jsondata['dateend'] + "'"
+        query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid='" + \
+                 data[
+                     'user'] + "')) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Date BETWEEN '" + \
+                 jsondata['datestart'] + "'  and '" + jsondata['dateend'] + "'"
+        query3 = "select * from Honors_and_Award where Euid = '" + data['user'] + "' and  Date BETWEEN '" + jsondata[
+            'datestart'] + "'  and '" + jsondata['dateend'] + "'"
 
-
-
-
-
-
-
-
-
+        result = db.query(query, 1)
+        result1 = db.query(query1, 1)
+        result2 = db.query(query2, 1)
+        result3 = db.query(query3, 1)
+        return jsonify({'Patent': result,
+                        'Project': result1,
+                        'Publication': result2,
+                        'Honors_and_Award': result3}), 200
+    except:
+        return jsonify({'msg': "Error "}), 401
 
 
 

@@ -58,7 +58,7 @@ def query(query1,fetch):
                 return 'Finished'
 
         except Exception as e:
-            return str(e)
+            return 'Error'
 
 
 def check(string):
