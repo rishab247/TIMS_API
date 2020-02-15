@@ -70,7 +70,7 @@ def Verify(data):
 @app.route('/login')
 def login():
        try:
-           print(db.getconnection())
+           (db.getconnection())
            auth = request.authorization
            if auth is None:
                return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
