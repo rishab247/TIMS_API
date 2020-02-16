@@ -598,7 +598,7 @@ def verifypassword1(data):
 
 
 
-@app.route('/report/download',methods=['GET'])
+@app.route('/report/download',methods=['POST'])
 @token_required
 def download(data):
     # dateend   datestart
