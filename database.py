@@ -1,10 +1,6 @@
-import decimal
 
 import pypyodbc
-from flask import Flask,jsonify,request,make_response,logging
-import jwt
-import json
-import datetime
+
 import re
 
 
@@ -34,10 +30,12 @@ def getconnection():
     if connection!=None:
         return connection
     else:
-       retry()
+       return  retry()
 
 
 def query(query1,fetch):
+        connection = getconnection()
+
         try:
 
             cursor = connection.cursor()

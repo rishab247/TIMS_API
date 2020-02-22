@@ -9,25 +9,25 @@ from functools import wraps
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'super_safe_67uy67uy54tre3we098uy6t5r1q2we345ty7u8io90secretasas33323232as23as2a3s2s3a2s3a2s32a3s'
-# connection
-try:
-    connection = db.getconnection()
-except:
-    try:
-        connection = db.getconnection()
-    except Exception as e:
-        print(str(e))
+# # connection
+# try:
+#     connection = db.getconnection()
+# except:
+#     try:
+#         connection = db.getconnection()
+#     except Exception as e:
+#         print(str(e))
 
 
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+
         token = request.args.get('token')
         if not token:
             return jsonify({'msg': 'token req', }), 401
 
         try:
-            (db.getconnection())
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
             return jsonify({'msg': 'token is not valid', }), 401
@@ -70,7 +70,6 @@ def Verify(data):
 @app.route('/login')
 def login():
        try:
-           (db.getconnection())
            auth = request.authorization
            if auth is None:
                return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
@@ -91,8 +90,8 @@ def login():
                                   app.config['SECRET_KEY'])
                return jsonify({'token': token.decode('UTF-8')})
            return make_response({'msg': 'Login req'}, 401, {'msg': 'Login req'})
-       except:
-           return jsonify({"msg": str(e)}), 401
+       except :
+           return jsonify({"msg": 'error'}), 401
 
 
 @app.route('/register', methods=['POST'])
@@ -194,7 +193,7 @@ def userAccomplishmenDetails(data):
 
                 if(result1==None or result==None or result1=='None' or result=='None'):
                     raise Exception
-                if(not verifypassword(data, jsondata['id'],jsondata['Type'] )):
+                if(not verifypassword(data, jsondata['id'], jsondata['Type'] )):
                     raise Exception
             except Exception as e:
                 return jsonify({'msg': str(e)}), 401
