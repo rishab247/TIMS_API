@@ -132,7 +132,7 @@ def register():
             return jsonify({'msg': 'inserted', }), 200
         return jsonify({'msg': result1 + '   ' + result2, }), 401
     except Exception as e:
-        return jsonify({"msg": str(e)}),401
+        return jsonify({"msg": 'error'}),401
 
 
 @app.route('/user/Profile', methods=['GET'])
@@ -159,25 +159,25 @@ def useraccomplishment(data):
         try:
             result = db.query("SELECT  Pid,Title,Date FROM [dbo].[Project_1] where Euid = '" + data['user'] + "' ", 1)
         except Exception as e:
-            result  = "No data present"+str(e)
+            result  = "No data present"+'error'
         try:
             result1 = db.query("SELECT  Pu_id,Title,Date FROM [dbo].[Publication] where Euid = '" + data['user'] + "' ", 1)
         except Exception as e:
-            result1  = "No data present"+str(e)
+            result1  = "No data present"+'error'
         try:
             result2 = db.query("SELECT  PKEY,Title,Date FROM [dbo].[Honors_and_Award] where Euid = '" + data['user'] + "' ", 1)
         except Exception as e:
-            result2  = "No data present"+str(e)
+            result2  = "No data present"+'error'
         try:
             result3 = db.query("SELECT  Pa_id,Title,Date FROM [dbo].[Patent] where Euid = '" + data['user'] + "' ", 1)
         except Exception as e:
-            result3  = "No data present"+str(e)
+            result3  = "No data present"+'error'
         return jsonify({'Project': result,
                         'Publication': result1,
                         'Honors_and_Award': result2,
                         'Patent': result3}), 200
     except Exception as e:
-        return jsonify({'msg': "No data present " + str(e)}), 401
+        return jsonify({'msg': "No data present " + 'error'}), 401
 
 @app.route('/user/Accomplishmen/Details',methods=['POST'])
 @token_required
@@ -186,6 +186,9 @@ def userAccomplishmenDetails(data):
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
         # 'id','Type',''
+        if not db.check(jsondata['Type']) or not db.check(jsondata['id']) or jsondata['Type']==''or jsondata['id']==''or  jsondata['Type'] is None or  jsondata['id'] is None    :
+            return jsonify({'msg': 'error2'}), 401
+
         if (jsondata['Type'] == 'Publication'):
             try:
                 result = db.query("SELECT  * FROM [dbo].[Publication] where Pu_id = '" + jsondata['id'] + "' ", 0)
@@ -196,7 +199,7 @@ def userAccomplishmenDetails(data):
                 if(not verifypassword(data, jsondata['id'], jsondata['Type'] )):
                     raise Exception
             except Exception as e:
-                return jsonify({'msg': str(e)}), 401
+                return jsonify({'msg': 'error1'+str(e)}), 401
             return jsonify({'data': result, 'author':result1}), 200
 
         elif (jsondata['Type'] == 'Project'):
@@ -208,7 +211,7 @@ def userAccomplishmenDetails(data):
                 if(not verifypassword(data, jsondata['id'],jsondata['Type']  )):
                     raise Exception
             except Exception as e:
-                return jsonify({'msg': str(e)}), 401
+                return jsonify({'msg': 'error'}), 401
             return jsonify({'data': result, 'author':result1}), 200
 
 
@@ -216,14 +219,15 @@ def userAccomplishmenDetails(data):
             try:
                 result = db.query("SELECT  * FROM [dbo].[Patent] where Pa_id = '" + jsondata['id'] + "' ", 0)
                 result1 = db.query(" select * from author where aid in ( select aid from patent_author where Pa_id ='" + jsondata['id'] + "')", 1)
+
                 if(result1==None or result==None or result1=='None' or result=='None'):
                     raise Exception
                 if(not verifypassword(data, jsondata['id'],jsondata['Type']  )):
                     raise Exception
             except Exception as e:
-                return jsonify({'msg': str(e)}), 404
+                return jsonify({'msg': 'error'}), 404
             return jsonify({'data': result, 'author':result1}), 200
-        elif (jsondata['Type'] == 'Honors_and_Award'):
+        elif (jsondata['Type'] == 'HonorsandAward'):
             try:
                 result = db.query("SELECT  * FROM [dbo].[Honors_and_Award] where PKEY = '" + jsondata['id'] + "' ", 0)
                 if(  result==None   or result=='None'):
@@ -231,14 +235,14 @@ def userAccomplishmenDetails(data):
                 if(not verifypassword(data, jsondata['id'] ,jsondata['Type']  )):
                     raise Exception
             except Exception as e:
-                return jsonify({'msg': str(e)}), 404
+                return jsonify({'msg': 'error'}), 404
             return jsonify({'data': result }), 200
         else:
             return jsonify({'msg': 'Type error'+jsondata['Type']}), 401
 
 
     except Exception as e:
-      return jsonify({'msg': str(e)}), 401
+      return jsonify({'msg': 'error3'+str(e)}), 401
 
 
 
@@ -256,7 +260,7 @@ def authorlist(data):
         return jsonify({'Status': result}), 200
 
     except Exception as e:
-        return jsonify({'msg': "No data present " + str(e)}), 401
+        return jsonify({'msg': "No data present " + 'error'}), 401
 
 
 
@@ -275,7 +279,7 @@ def authorsearch(data):
         result = (db.query(query1, 0))
         return jsonify({'msg': result[0]}), 200
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
+        return jsonify({'msg': "No data present "+'error'}), 401
 
 
 
@@ -328,7 +332,7 @@ def Accomplishmentuploadpublication(data):
         print(author_list_id)
         return jsonify({'msg': author_list_id }), 200
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
+        return jsonify({'msg': "No data present "+'error'}), 401
 
 
 @app.route('/user/upload/Project',methods=['POST']  )
@@ -381,7 +385,7 @@ def Accomplishmentuploadproject(data):
         print(author_list_id)
         return jsonify({'msg': author_list_id }), 200
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
+        return jsonify({'msg': "No data present "+'error'}), 401
 
 
 
@@ -409,7 +413,7 @@ def Accomplishmentuploadhonor(data):
         print(result)
         return jsonify({'msg': "inserted" }), 200
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
+        return jsonify({'msg': "No data present "+'error'}), 401
 
 
 
@@ -469,7 +473,7 @@ def Accomplishmentuploadpatent(data):
         print(author_list_id)
         return jsonify({'msg': author_list_id }), 200
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
+        return jsonify({'msg': "No data present "+'error'}), 401
 
 
 
@@ -532,7 +536,7 @@ def Accomplishmentdelete(data):
         print(result1)
         return jsonify({'msg': "Deleted" }), 200
     except Exception as e:
-        return jsonify({'msg': "No data present "+str(e)}), 401
+        return jsonify({'msg': "No data present "+'error'}), 401
 
 
 @app.route('/user/Profile', methods=['PUT'])
@@ -566,7 +570,7 @@ def updateuserdata(data):
 
         return jsonify({'msg': result,'msg1': result1}), 200
     except Exception as e:
-        return jsonify({'msg': "Error "+str(e)}), 401
+        return jsonify({'msg': "Error "+'error'}), 401
 
 
 
@@ -592,7 +596,7 @@ def verifypassword1(data):
         print(result)
         return jsonify({'msg': result}), 200
     except Exception as e:
-        return jsonify({'msg': "Error "+str(e)}), 401
+        return jsonify({'msg': "Error "+'error'}), 401
 
 
 
@@ -660,7 +664,7 @@ def download(data):
             result1 = db.query(query1, 1)
             return jsonify({
                 'Project': result1}), 200
-        elif jsondata['type'] == 'Honors and Award':
+        elif jsondata['type'] == 'HonorsandAward':
             query3 = "select * from Honors_and_Award where Euid = '" + data['user'] + "' and  Date BETWEEN '" + jsondata[
                 'datestart'] + "'  and '" + jsondata['dateend'] + "'"
             result1 = db.query(query3, 1)
@@ -698,7 +702,7 @@ def addauthor(list):
             return result1[0]
         return result
     except Exception as e:
-        return "ddfsd"+str(e)
+        return "ddfsd"+'error'
 
 def authorsearch1(list):
     try:
@@ -715,13 +719,14 @@ def authorsearch1(list):
 
         return result
     except Exception as e:
-        return  str(e)
+        return  'error'
 
 def verifypassword(data,id,type):
     if (type == 'Publication'):
         try:
             result = db.query("  SELECT CASE WHEN EXISTS (SELECT * from Publication where Euid ='" + data['user'] + "' and pu_id = '" + id + "') THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END", 0)
             print(result)
+
             if(result[0]):
                 return True
             else:
@@ -754,7 +759,7 @@ def verifypassword(data,id,type):
 
         except Exception as e:
             return False
-    elif ( type == 'Honors_and_Award'):
+    elif ( type == 'HonorsandAward'):
         try:
             result = db.query("SELECT CASE WHEN EXISTS (select * from Honors_and_Award where Euid='"+data['user']+"' and PKEY='"+id+"' ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END ", 0)
             print(result)
@@ -802,9 +807,9 @@ def verifypassword1(data,jsondata):
 #             cursor.close()
 #             return  result
 #         except Exception as e:
-#             return str(e)
+#             return 'error'
 #     except Exception as e:
-#         return  str(e)
+#         return  'error'
 
 
 # def login_query(query1,query2):
