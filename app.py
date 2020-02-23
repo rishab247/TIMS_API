@@ -514,7 +514,7 @@ def Accomplishmentdelete(data):
             'password'] == '' or \
                 jsondata['Type'] is None or jsondata['id'] is None or jsondata['password'] is None:
             raise Exception("   1   ")
-        if not verifypassword1(data, jsondata):
+        if not verifypassword10(data, jsondata):
             return jsonify({'msg': "incorrect password"}), 401
         if jsondata["Type"] == 'Project':
             query = "SELECT CASE WHEN EXISTS (select * from [Project_1] where Euid=? and Pid= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
@@ -592,8 +592,8 @@ def updateuserdata(data):
                 jsondata['University'] is None or jsondata['phoneno'] is None:
             return jsonify({'msg': "Not Allowed"}), 405
 
-        if not verifypassword1(data, jsondata):
-            return jsonify({'msg': "Wrong Password  "}), 401
+        if not verifypassword10(data, jsondata):
+            return jsonify({'msg': "Wrong Password  22"}), 401
         query = "UPDATE [dbo].[user_info] SET [Phone_No] = ?,[Department_Name] = ?,[Qualifications] = ?,[University] = ? WHERE [Euid] =	? "
         result = db.query(query, 2, [jsondata['phoneno'], jsondata["Department_Name"], jsondata["Qualification"],
                                      jsondata['University'], data['user']])
@@ -602,11 +602,11 @@ def updateuserdata(data):
             if (db.query(
                     "SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid=?) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
                     0, [data['user']])[0]):
-                query = "UPDATE [dbo].[Profile_image] SET [Image] = ? WHERE Euid = ?"
-                list = [jsondata['pic'], data['user']]
+                query = "UPDATE [dbo].[Profile_image] SET [Image] = '"+jsondata['pic']+"' WHERE Euid = ?"
+                list = [ data['user']]
             else:
-                query = "INSERT INTO [dbo].[Profile_image] VALUES(?,?)"
-                list = [data['user'], jsondata['pic']]
+                query = "INSERT INTO [dbo].[Profile_image] VALUES(?,'"+jsondata['pic']+"')"
+                list = [data['user']]
             result1 = db.query(query, 2, list)
             print(result1)
         print(result)
@@ -630,8 +630,8 @@ def verifypassword1(data):
                 " SELECT CASE WHEN EXISTS (select * from [user_info] where Euid= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
                 0, [data['user']])[0]):
             return jsonify({'msg': "User doen't exist"}), 401
-        if not verifypassword1(data, jsondata):
-            return jsonify({'msg': "Wrong Password  "}), 401
+        if not verifypassword10(data, jsondata):
+            return jsonify({'msg': "Wrong Password  1"}), 401
         query = "UPDATE [dbo].[user_info] SET  [Password] = ? WHERE [Euid] = ?  "
         result = db.query(query, 2, [jsondata["new_password"], data['user']])
         print(result)
@@ -809,20 +809,21 @@ def verifypassword(data, id, type):
         return False
 
 
-def verifypassword1(data, jsondata):
+def verifypassword10(data, jsondata):
     try:
 
         if jsondata['password'] == '' or jsondata is None or jsondata['password'] is None or not db.check(
                 jsondata['password']):
             raise Exception
 
-        query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = '" + data['user'] + "'"
-        result = (db.query(query1, 0))
+        query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = ?"
+        result = (db.query(query1, 0,[data['user']]))
         if jsondata['password'] == result[0]:
             return True
 
         return False
     except Exception as e:
+        print(str(e))
         return False
 
 # extra code
