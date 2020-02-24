@@ -43,8 +43,8 @@ def getconnection():
 def query(query1, fetch, list):
     connection = getconnection()
     global i
-    # print(query1)
-    # print(list)
+    print(query1)
+    print(list)
     try:
         cursor = connection.cursor()
         cursor.execute(query1, list)
@@ -77,7 +77,7 @@ def query(query1, fetch, list):
 def query1(query1, fetch):
     connection = getconnection()
     global i
-    # print(query1)
+    print(query1)
     try:
 
         cursor = connection.cursor()
