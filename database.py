@@ -69,7 +69,7 @@ def query(query1, fetch, list):
 
         i = i+ 1
         print(str(i)+"12")
-        print(str(e))
+        print('exeption'+str(e))
         if ((i %2)!=0):
             retry()
             query(query1, fetch, list)
