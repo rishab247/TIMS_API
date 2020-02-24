@@ -324,11 +324,13 @@ def Accomplishmentuploadpublication(data):
         query1 = "insert into Publication values(?,?,?,?,?,?) "
         result = (db.query(query1, 2, [jsondata['Title'], jsondata['Publication_or_publisher'], jsondata['Date'],
                                        jsondata['Description'], jsondata['url'], data['user']]))
+        print(result)
         if result is not 'Finished':
             raise Exception
-        result = str(db.query("select SCOPE_IDENTITY();", 1))
+        result = str(db.query1(" select  @@IDENTITY", 1))
         result = result[11:-5]
         result = int(result)
+        print(result)
         author_list_id = list(jsondata['author'])
         noofauthor = int(jsondata['noofauthor'])
         author_type_list = jsondata['typeofauthor']
@@ -355,6 +357,7 @@ def Accomplishmentuploadpublication(data):
         print(author_list_id)
         return jsonify({'msg': author_list_id}), 200
     except Exception as e:
+        print(str(e))
         return jsonify({'msg': "No data present " + 'error'}), 401
 
 
@@ -377,11 +380,11 @@ def Accomplishmentuploadproject(data):
                 0, [data['user'], jsondata['Title']])[0]):
             return jsonify({'msg': "Dublicate entry "}), 401
         query1 = "insert into Project_1 values(?,?,?,?,?); "
-        result = (db.query(query1, 2),[jsondata['Title'], jsondata['Date'], jsondata['Description'], jsondata['url'], data['user']])
-        print(query1)
+        result = (db.query(query1, 2,[jsondata['Title'], jsondata['Date'], jsondata['Description'], jsondata['url'], data['user']]))
+        print(result)
         if result is not 'Finished':
             raise Exception
-        result = str(db.query("select SCOPE_IDENTITY();", 1))
+        result = str(db.query("select @@IDENTITY", 1,[]))
         result = result[11:-5]
         result = int(result)
         author_list_id = list(jsondata['author'])
@@ -410,6 +413,7 @@ def Accomplishmentuploadproject(data):
         print(author_list_id)
         return jsonify({'msg': author_list_id}), 200
     except Exception as e:
+        print(str(e))
         return jsonify({'msg': "No data present " + 'error'}), 401
 
 
@@ -468,7 +472,7 @@ def Accomplishmentuploadpatent(data):
         print(query1)
         if result is not 'Finished':
             raise Exception
-        result = str(db.query("select SCOPE_IDENTITY();", 1,[]))
+        result = str(db.query(" select  @@IDENTITY;", 1,[]))
         result = result[11:-5]
         result = int(result)
         author_list_id = list(jsondata['author'])
@@ -507,7 +511,7 @@ def Accomplishmentdelete(data):
     try:
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
-        # 'noofauthor'  'Type'  'id' 'author_id'
+        #   'Type'  'id' 'author_id'
 
         if not db.check(jsondata['Type']) or not db.check(jsondata['password']) \
                 or not db.check(jsondata['id']) or jsondata['Type'] == '' or jsondata['id'] == '' or jsondata[
@@ -716,17 +720,18 @@ def addauthor(list):
         result = authorsearch1(list)
         print(result)
         if result is None:
-            result = (db.query("insert into author values('" + list[0] + "','" + list[1] + "','" + list[2] + "' )", 2))
+            result = (db.query("insert into author values(?,?,?)", 2,[list[0] , list[1] , list[2]  ]))
             if result is not 'Finished':
                 raise Exception
 
-            result1 = (db.query("select SCOPE_IDENTITY()", 0, []))
+            result1 = (db.query("select @@IDENTITY", 0, []))
             # result1 = int(result1[11:-5])
             print(result)
             print(result1)
             return result1[0]
         return result
     except Exception as e:
+        print(str(e))
         return "ddfsd" + 'error'
 
 
@@ -735,7 +740,7 @@ def authorsearch1(list):
 
         if list[1] == '' or list is None or list[1] is None or not db.Email_check(list[1]):
             raise Exception
-        query1 = "SELECT [Aid] FROM [dbo].[Author] WHERE Email =  "
+        query1 = "SELECT [Aid] FROM [dbo].[Author] WHERE Email =  ?"
         result = (db.query(query1, 0, [list[1]]))
         if result is None or result == '':
             return None
