@@ -641,8 +641,8 @@ def verifypassword1(data):
             return jsonify({'msg': "User doen't exist"}), 401
         if not verifypassword10(data, jsondata):
             return jsonify({'msg': "Wrong Password  1"}), 401
-        query = "UPDATE [dbo].[user_info] SET  [Password] = ? WHERE [Euid] = ?  "
-        result = db.query(query, 2, [jsondata["new_password"], data['user']])
+        query = "UPDATE [dbo].[user_info] SET  [Password] =  '"+jsondata["new_password"]+"' WHERE [Euid] = ?  "
+        result = db.query(query, 2, [  data['user']])
         print('password result'+str(result))
         return jsonify({'msg': result}), 200
     except Exception as e:
