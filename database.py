@@ -43,10 +43,9 @@ def getconnection():
 def query(query1, fetch, list):
     connection = getconnection()
     global i
-    print(query1)
-    print(list)
+    # print(query1)
+    # print(list)
     try:
-
         cursor = connection.cursor()
         cursor.execute(query1, list)
         if fetch == 0:
@@ -78,7 +77,7 @@ def query(query1, fetch, list):
 def query1(query1, fetch):
     connection = getconnection()
     global i
-    print(query1)
+    # print(query1)
     try:
 
         cursor = connection.cursor()
@@ -87,14 +86,14 @@ def query1(query1, fetch):
             result = cursor.fetchone()
             connection.commit()
             cursor.close()
-            print("result"+str(result))
+            # print("result"+str(result))
 
             return result
         elif fetch == 1:
             result = cursor.fetchall()
             connection.commit()
             cursor.close()
-            print("result"+str(result))
+            # print("result"+str(result))
 
             return result
         else:

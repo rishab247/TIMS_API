@@ -543,7 +543,7 @@ def Accomplishmentdelete(data):
             list = [data['user'], jsondata['id']]
             query1 = "SELECT CASE WHEN EXISTS (select * from [patent_author] where pa_id=?) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END"
             list1 = [jsondata['id']]
-            delquery = " DELETE from [Patent] where Euid= ?and pa_id=?"
+            delquery = " DELETE from [Patent] where Euid= ? and pa_id=?"
             dellist = [data['user'], jsondata['id']]
             delquery1 = " DELETE from [patent_author] where pa_id=?"
             dellist1 = [jsondata['id']]
@@ -568,12 +568,17 @@ def Accomplishmentdelete(data):
 
         if delquery1 != "":
             result = db.query(delquery1, 2, dellist1)
-            print(result)
+            print("delquery1" + str(result ))
+            if  str(result) != "Finished":
+                raise Exception
 
         result1 = db.query(delquery, 2, dellist)
-        print(result1)
+        print("delquery" +str(result1))
+        if str(result1) != "Finished":
+            raise Exception
         return jsonify({'msg': "Deleted"}), 200
     except Exception as e:
+        print(str(e))
         return jsonify({'msg': "No data present " + 'error'}), 401
 
 
