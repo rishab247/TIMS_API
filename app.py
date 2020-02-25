@@ -665,12 +665,12 @@ def download(data):
             return jsonify({'msg': "Not Allowed"}), 405
         if jsondata['type'] == 'all':
             query = "select patent.Pa_id,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent where Euid=" + \
-                    "?)) and author.aid=patent_author.Aid and patent.pa_id=patent_author.pa_id and date BETWEEN ?  and ?"
-            list = [data['user'], jsondata['datestart'], jsondata['dateend']]
+                    "?)) and author.aid=patent_author.Aid and patent.pa_id in(select Pa_id from patent where Euid=?)  and patent.pa_id=patent_author.pa_id and date BETWEEN ?  and ?"
+            list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
             query1 = "select project_author.Pid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 where Euid=" + \
-                     "?)) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and date BETWEEN ? and ?"
+                     "?)) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and  Project_1.Pid in (select Pid from Project_1 where Euid=?) and date BETWEEN ? and ?"
             query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
-                     "?)) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Date BETWEEN ?  and ?"
+                     "?)) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid=?)  and Date BETWEEN ?  and ?"
             query3 = "select * from Honors_and_Award where Euid = ? and  Date BETWEEN ? and ?"
 
             result = db.query(query, 1, list)
@@ -683,22 +683,22 @@ def download(data):
                             'Honors_and_Award': result3}), 200
         elif jsondata['type'] == 'Patent':
             query = "select patent.Pa_id,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent where Euid=" + \
-                    "?)) and author.aid=patent_author.Aid and patent.pa_id=patent_author.pa_id and date BETWEEN ?  and ?"
-            list = [data['user'], jsondata['datestart'], jsondata['dateend']]
+                    "?)) and author.aid=patent_author.Aid and patent.pa_id=patent_author.pa_id and patent.pa_id in(select Pa_id from patent where Euid=?)  and date BETWEEN ?  and ?"
+            list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
 
             result = db.query(query, 1, list)
             return jsonify({'Patent': result}), 200
         elif jsondata['type'] == 'Publication':
             query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
-                     "?and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Date BETWEEN ? and ?"
-            list = [data['user'], jsondata['datestart'], jsondata['dateend']]
+                     "?))and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid=?)  and Date BETWEEN ? and ?"
+            list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
 
             result1 = db.query(query2, 1, list)
             return jsonify({'Publication': result1}), 200
         elif jsondata['type'] == 'Project':
             query1 = "select project_author.Pid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 where Euid=" + \
-                     "?)) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and date BETWEEN ?  and ?"
-            list = [data['user'], jsondata['datestart'], jsondata['dateend']]
+                     "?)) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and  Project_1.Pid in (select Pid from Project_1 where Euid=?) and date BETWEEN ?  and ?"
+            list = [data['user'], data['user'], jsondata['datestart'], jsondata['dateend']]
 
             result1 = db.query(query1, 1, list)
             return jsonify({

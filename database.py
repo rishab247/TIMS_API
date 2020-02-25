@@ -57,7 +57,6 @@ def query(query1, fetch, list):
             result = cursor.fetchall()
             connection.commit()
             cursor.close()
-            print("result"+str(result))
 
             return result
         else:
