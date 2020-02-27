@@ -672,11 +672,12 @@ def download(data):
             query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
                      "?)) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid=?)  and Date BETWEEN ?  and ?"
             query3 = "select * from Honors_and_Award where Euid = ? and  Date BETWEEN ? and ?"
+            list1 = [data['user'], jsondata['datestart'], jsondata['dateend']]
 
             result = db.query(query, 1, list)
             result1 = db.query(query1, 1, list)
             result2 = db.query(query2, 1, list)
-            result3 = db.query(query3, 1, list)
+            result3 = db.query(query3, 1, list1)
             return jsonify({'Patent': result,
                             'Project': result1,
                             'Publication': result2,
