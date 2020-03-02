@@ -309,28 +309,27 @@ def Accomplishmentuploadpublication(data):
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
         # 'noofauthor'  'Type'  'author'
-        if not db.check(jsondata['noofauthor']) or not db.check(jsondata['Title']) \
-                or not db.check(jsondata['Date']) or not db.check(jsondata['Description']) or not db.check(
-            jsondata['Publication_or_publisher']) \
-                or jsondata['noofauthor'] == '' or jsondata['Title'] == '' or jsondata['Publication_or_publisher'] == '' \
-                or jsondata['Date'] == '' or jsondata['Description'] == '' or jsondata['noofauthor'] is None or \
-                jsondata['Title'] is None or jsondata['Publication_or_publisher'] is None \
-                or jsondata['Date'] is None or jsondata['Description'] is None:
+        if not db.check(jsondata['noofauthor']) or not db.check(jsondata['Title']) or not db.check(jsondata['type']) \
+                or not db.check(jsondata['Date']) or not db.check(jsondata['Description']) or not db.check(jsondata['Publication_or_publisher']) \
+                or jsondata['noofauthor'] == '' or jsondata['Title'] == '' or jsondata['Publication_or_publisher'] == '' or jsondata['type'] == '' \
+                or jsondata['Date'] == '' or jsondata['Description'] == '' or jsondata['noofauthor'] is None or jsondata['type'] is None or \
+                jsondata['Title'] is None or jsondata['Publication_or_publisher'] is None or jsondata['Date'] is None or jsondata['Description'] is None:
             raise Exception
         if (db.query(
                 " SELECT CASE WHEN EXISTS (select * from Publication where Euid= ? and title= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
                 0, [data['user'], jsondata['Title']])[0]):
             return jsonify({'msg': "Dublicate entry "}), 401
-        query1 = "insert into Publication values(?,?,?,?,?,?) "
+        query1 = "insert into Publication values(?,?,?,?,?,?,?) "
         result = (db.query(query1, 2, [jsondata['Title'], jsondata['Publication_or_publisher'], jsondata['Date'],
-                                       jsondata['Description'], jsondata['url'], data['user']]))
-        print(result)
+                                       jsondata['Description'], jsondata['url'], data['user'],jsondata['type']]))
+        print(result+"123")
         if result is not 'Finished':
             raise Exception
         result = str(db.query1(" select  @@IDENTITY", 1))
+
         result = result[11:-5]
+
         result = int(result)
-        print(result)
         author_list_id = list(jsondata['author'])
         noofauthor = int(jsondata['noofauthor'])
         author_type_list = jsondata['typeofauthor']
@@ -669,7 +668,7 @@ def download(data):
             list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
             query1 = "select project_author.Pid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 where Euid=" + \
                      "?)) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and  Project_1.Pid in (select Pid from Project_1 where Euid=?) and date BETWEEN ? and ?"
-            query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
+            query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Type,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
                      "?)) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid=?)  and Date BETWEEN ?  and ?"
             query3 = "select * from Honors_and_Award where Euid = ? and  Date BETWEEN ? and ?"
             list1 = [data['user'], jsondata['datestart'], jsondata['dateend']]
@@ -690,7 +689,7 @@ def download(data):
             result = db.query(query, 1, list)
             return jsonify({'Patent': result}), 200
         elif jsondata['type'] == 'Publication':
-            query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
+            query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Type,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
                      "?))and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid=?)  and Date BETWEEN ? and ?"
             list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
 
