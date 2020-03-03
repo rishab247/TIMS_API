@@ -83,11 +83,15 @@ def login():
         query2 = 'SELECT  [HOD],[Hod_Department] FROM [dbo].[Status]where Euid = ? '
         result = (db.query(query1, 0, [auth.username]))
         result1 = (db.query(query2, 0, [auth.username]))
+        query = "SELECT  [Status] FROM [dbo].[Status]where Euid = ? "
+        result3 = db.query(query, 0, [auth.username])
+        print((result3[0]))
         if result is None:
             return jsonify({'msg': 'incorrect username'}), 401
         if auth and auth.password == result[0]:
-            token = jwt.encode({'user': auth.username, 'HOD': result1[0],
-                                'hod_department': result1[1],
+            token = jwt.encode({'user': auth.username, 'HOD':  (result1[0]),
+                                'hod_department': (result1[1]),
+                                'Verify':result3[0],
                                 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
                                app.config['SECRET_KEY'])
             return jsonify({'token': token.decode('UTF-8')})
@@ -136,10 +140,15 @@ def register():
                             [data['Euid'], data['Name'], data['Email'], data['Password'], data['Phone_No'],
                              data['Department_Name'], data['DOJ'], data['Qualifications'], data['University'],
                              data['DOB']]))
+        if data['type'] =='1':
+            result3 = (db.query("INSERT INTO [dbo].[Faculty_info] VALUES (?,?,?,?);", 2,
+                            [data['Euid'], data['Name'], data['Phone_No'],data['Department_Name']]))
+        else:
+            result3='Finished'
         result2 = (db.query("INSERT INTO [dbo].[Status] VALUES (?,?,?,?,?);", 2,
                             [data['Euid'], 0, data['type'], data['Name'], data['Hod_Department']]))
 
-        if result1 == 'Finished' and result2 == 'Finished':
+        if result1 == 'Finished' and result2 == 'Finished'and result3 == 'Finished':
             return jsonify({'msg': 'inserted', }), 200
         return jsonify({'msg': result1 + '   ' + result2, }), 401
     except Exception as e:
@@ -718,6 +727,40 @@ def download(data):
 
     except:
         return jsonify({'msg': "Error "}), 401
+
+
+@app.route('/facultylist', methods=['POST'])
+@token_required
+def facultylist(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if data['HOD']==True and data['Verify']==True:
+            if not db.check(jsondata['Department']) or \
+                    jsondata['Department'] == '' or \
+                    jsondata['Department'] is None:
+                return jsonify({'msg': "Not Allowed"}), 405
+            if (jsondata['Department'] == 'all'):
+                query = "select * from faculty_info  "
+                list1 = []
+
+            else:
+                query = "select Euid,Name,Phoneno from faculty_info  where Department= ? "
+                list1 = [jsondata['Department']]
+
+            resutl = db.query(query, 1, list1)
+            print(data['Verify'])
+            print(data['HOD'])
+            return jsonify({'msg': resutl}), 200
+            # if(data)
+
+        else:
+            return jsonify({'msg': "Not Allowed"}), 405
+
+
+    except:
+        return jsonify({'msg': "Error "}), 401
+
 
 
 def addauthor(list):
