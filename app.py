@@ -790,7 +790,7 @@ def facultyverify(data):
             print(result)
             if result!='Finished':
                 raise ('not finished')
-            return jsonify({'msg':result}), 200
+            return jsonify({'msg':"Faculty Verified"}), 200
 
             # if(data)
 
