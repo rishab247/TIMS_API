@@ -764,6 +764,54 @@ def facultylist(data):
 
 
 
+@app.route('/facultyverify', methods=['POST'])
+@token_required
+def facultyverify(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if data['HOD']==True and data['Verify']==True:
+            if  jsondata['Euid'] == '' or len(jsondata['Euid'])==0 or\
+                    jsondata['Euid'] is None  or type([]) != type (jsondata['Euid']) :
+                return jsonify({'msg': "Not Allowed"}), 405
+            test=0
+            for i in jsondata['Euid'] :
+                if not db.check(i)  :
+                    test=1
+                    break
+            if test==1 :
+                return jsonify({'msg': "Not Allowed"}), 405
+            str =''
+            for i in range(len(jsondata['Euid'])-1):
+                str+='?,'
+            str+='?'
+            query = " update Status set Status.Status=1 from	Status where Euid in("+str+")"
+            result  = db.query(query,2,jsondata['Euid'])
+            print(result)
+            if result!='Finished':
+                raise ('not finished')
+            return jsonify({'msg':result}), 200
+
+            # if(data)
+
+        else:
+            return jsonify({'msg': "Not Allowed"}), 405
+
+
+    except  Exception as e:
+        print(e)
+        return jsonify({'msg': "Error "}), 401
+
+
+
+
+
+
+
+
+
+
+
 def addauthor(list):
     try:
         result = authorsearch1(list)
