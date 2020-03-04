@@ -742,11 +742,11 @@ def facultylist(data):
                     jsondata['Department'] is None:
                 return jsonify({'msg': "Not Allowed"}), 405
             if (jsondata['Department'] == 'all'):
-                query = "select faculty_info.*, Status.Status from faculty_info,Status where Status.Euid =Faculty_info.Euid"
+                query = "select faculty_info.Euid,faculty_info.name,Status.Status from faculty_info,Status where Status.Euid =Faculty_info.Euid"
                 list1 = []
 
             else:
-                query = "select faculty_info.*, Status.Status from faculty_info,Status where Status.Euid =Faculty_info.Euid and Faculty_info.Department= ? "
+                query = "select faculty_info.Euid,faculty_info.name, Status.Status from faculty_info,Status where Status.Euid =Faculty_info.Euid and Faculty_info.Department= ? "
                 list1 = [jsondata['Department']]
 
             resutl = db.query(query, 1, list1)
