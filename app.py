@@ -165,6 +165,10 @@ def userdata(data):
     a = "noimage"
     result1 = a.split(" ")
     print(result1)
+
+    query2 = "SELECT status FROM [dbo].[status]where Euid = ? "
+    result2 = db.query(query2, 0, [data['user']])
+
     if (db.query(
             "SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
             0, [data['user']])[0]):
@@ -172,7 +176,7 @@ def userdata(data):
         result1 = db.query(query, 1, [data['user']])
         result1 = str(result1[0])[13:-4]
         result1 = result1.strip().split(" ")
-    return jsonify({'Status': result, 'pic': result1}), 200
+    return jsonify({'Status': result, 'pic': result1,'Verify':result2}), 200
 
 
 @app.route('/user/Accomplishment')
