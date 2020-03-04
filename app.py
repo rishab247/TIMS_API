@@ -141,8 +141,9 @@ def register():
                              data['Department_Name'], data['DOJ'], data['Qualifications'], data['University'],
                              data['DOB']]))
         if data['type'] =='1':
-            result3 = (db.query("INSERT INTO [dbo].[Faculty_info] VALUES (?,?,?,?);", 2,
-                            [data['Euid'], data['Name'], data['Phone_No'],data['Department_Name']]))
+            result3 = (db.query("INSERT INTO [dbo].[Faculty_info] VALUES (?,?,?,?,?,?,?,?,?);", 2,
+                            [data['Euid'], data['Name'], data['Phone_No'],data['Email'],
+                             data['Department_Name'], data['DOJ'],data['DOB'], data['Qualifications'], data['University']]))
         else:
             result3='Finished'
         result2 = (db.query("INSERT INTO [dbo].[Status] VALUES (?,?,?,?,?);", 2,
@@ -741,11 +742,11 @@ def facultylist(data):
                     jsondata['Department'] is None:
                 return jsonify({'msg': "Not Allowed"}), 405
             if (jsondata['Department'] == 'all'):
-                query = "select * from faculty_info  "
+                query = "select faculty_info.*, Status.Status from faculty_info,Status where Status.Euid =Faculty_info.Euid"
                 list1 = []
 
             else:
-                query = "select Euid,Name,Phoneno from faculty_info  where Department= ? "
+                query = "select faculty_info.*, Status.Status from faculty_info,Status where Status.Euid =Faculty_info.Euid and Faculty_info.Department= ? "
                 list1 = [jsondata['Department']]
 
             resutl = db.query(query, 1, list1)
