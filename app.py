@@ -5,6 +5,7 @@ import json
 import datetime
 import database as db
 from functools import wraps
+from main2 import *
 
 app = Flask(__name__)
 
@@ -20,6 +21,21 @@ app.config[
 #         connection = db.getconnection()
 #     except Exception as e:
 #         print(str(e))
+
+
+@app.route("/Askme", methods=['POST'])
+def Askme():
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        print(main_call(jsondata['msg']))
+
+        return jsonify({'msg': (main_call(jsondata['msg'])) }), 200
+
+    except Exception  as e:
+        print(str(e))
+
+        return jsonify({'msg': 'Fuck Off! Again', }), 401
 
 
 def token_required(f):
