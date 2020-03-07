@@ -35,7 +35,7 @@ def Askme():
     except Exception  as e:
         print(str(e))
 
-        return jsonify({'msg': 'Fuck Off! Again', }), 401
+        return jsonify({'msg': '  Again!', }), 401
 
 
 def token_required(f):
