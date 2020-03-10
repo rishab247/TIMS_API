@@ -89,9 +89,9 @@ def login():
         if result is None:
             return jsonify({'msg': 'incorrect username'}), 401
         if auth and auth.password == result[0]:
-            token = jwt.encode({'user': auth.username, 'HOD':  (result1[0]),
+            token = jwt.encode({'user': auth.username, 'HOD': (result1[0]),
                                 'hod_department': (result1[1]),
-                                'Verify':result3[0],
+                                'Verify': result3[0],
                                 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
                                app.config['SECRET_KEY'])
             return jsonify({'token': token.decode('UTF-8')})
@@ -117,7 +117,8 @@ def register():
                 0, [str(data['Euid'])])[0]):
             return jsonify({'msg': "Dublicate Euid "}), 401
         if (db.query(
-                "SELECT CASE WHEN EXISTS (select * from user_info where Email= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",0,
+                "SELECT CASE WHEN EXISTS (select * from user_info where Email= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
+                0,
                 [(data['Email'])])[0]):
             return jsonify({'msg': "Dublicate Email "}), 401
         # query1 = "INSERT INTO [dbo].[user_info] VALUES ("
@@ -140,16 +141,17 @@ def register():
                             [data['Euid'], data['Name'], data['Email'], data['Password'], data['Phone_No'],
                              data['Department_Name'], data['DOJ'], data['Qualifications'], data['University'],
                              data['DOB']]))
-        if data['type'] =='1':
+        if data['type'] == '1':
             result3 = (db.query("INSERT INTO [dbo].[Faculty_info] VALUES (?,?,?,?,?,?,?,?,?);", 2,
-                            [data['Euid'], data['Name'], data['Phone_No'],data['Email'],
-                             data['Department_Name'], data['DOJ'],data['DOB'], data['Qualifications'], data['University']]))
+                                [data['Euid'], data['Name'], data['Phone_No'], data['Email'],
+                                 data['Department_Name'], data['DOJ'], data['DOB'], data['Qualifications'],
+                                 data['University']]))
         else:
-            result3='Finished'
+            result3 = 'Finished'
         result2 = (db.query("INSERT INTO [dbo].[Status] VALUES (?,?,?,?,?);", 2,
                             [data['Euid'], 0, data['type'], data['Name'], data['Hod_Department']]))
 
-        if result1 == 'Finished' and result2 == 'Finished'and result3 == 'Finished':
+        if result1 == 'Finished' and result2 == 'Finished' and result3 == 'Finished':
             return jsonify({'msg': 'inserted', }), 200
         return jsonify({'msg': result1 + '   ' + result2, }), 401
     except Exception as e:
@@ -176,7 +178,7 @@ def userdata(data):
         result1 = db.query(query, 1, [data['user']])
         result1 = str(result1[0])[13:-4]
         result1 = result1.strip().split(" ")
-    return jsonify({'Status': result, 'pic': result1,'Verify':result2}), 200
+    return jsonify({'Status': result, 'pic': result1, 'Verify': result2}), 200
 
 
 @app.route('/user/Accomplishment')
@@ -274,11 +276,11 @@ def useraccomplishmendetails(data):
                 return jsonify({'msg': 'error'}), 404
             return jsonify({'data': result}), 200
         else:
-            return jsonify({'msg': 'Type error'+jsondata['Type']}), 401
+            return jsonify({'msg': 'Type error' + jsondata['Type']}), 401
 
 
     except Exception as e:
-      return jsonify({'msg': 'error3'+str(e)}), 401
+        return jsonify({'msg': 'error3' + str(e)}), 401
 
 
 @app.route('/author/list')
@@ -324,10 +326,14 @@ def Accomplishmentuploadpublication(data):
         jsondata = json.loads(jsondata)
         # 'noofauthor'  'Type'  'author'
         if not db.check(jsondata['noofauthor']) or not db.check(jsondata['Title']) or not db.check(jsondata['type']) \
-                or not db.check(jsondata['Date']) or not db.check(jsondata['Description']) or not db.check(jsondata['Publication_or_publisher']) \
-                or jsondata['noofauthor'] == '' or jsondata['Title'] == '' or jsondata['Publication_or_publisher'] == '' or jsondata['type'] == '' \
-                or jsondata['Date'] == '' or jsondata['Description'] == '' or jsondata['noofauthor'] is None or jsondata['type'] is None or \
-                jsondata['Title'] is None or jsondata['Publication_or_publisher'] is None or jsondata['Date'] is None or jsondata['Description'] is None:
+                or not db.check(jsondata['Date']) or not db.check(jsondata['Description']) or not db.check(
+            jsondata['Publication_or_publisher']) \
+                or jsondata['noofauthor'] == '' or jsondata['Title'] == '' or jsondata[
+            'Publication_or_publisher'] == '' or jsondata['type'] == '' \
+                or jsondata['Date'] == '' or jsondata['Description'] == '' or jsondata['noofauthor'] is None or \
+                jsondata['type'] is None or \
+                jsondata['Title'] is None or jsondata['Publication_or_publisher'] is None or jsondata['Date'] is None or \
+                jsondata['Description'] is None:
             raise Exception
         if (db.query(
                 " SELECT CASE WHEN EXISTS (select * from Publication where Euid= ? and title= ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
@@ -335,8 +341,8 @@ def Accomplishmentuploadpublication(data):
             return jsonify({'msg': "Dublicate entry "}), 401
         query1 = "insert into Publication values(?,?,?,?,?,?,?) "
         result = (db.query(query1, 2, [jsondata['Title'], jsondata['Publication_or_publisher'], jsondata['Date'],
-                                       jsondata['Description'], jsondata['url'], data['user'],jsondata['type']]))
-        print(result+"123")
+                                       jsondata['Description'], jsondata['url'], data['user'], jsondata['type']]))
+        print(result + "123")
         if result is not 'Finished':
             raise Exception
         result = str(db.query1(" select  @@IDENTITY", 1))
@@ -393,11 +399,12 @@ def Accomplishmentuploadproject(data):
                 0, [data['user'], jsondata['Title']])[0]):
             return jsonify({'msg': "Dublicate entry "}), 401
         query1 = "insert into Project_1 values(?,?,?,?,?); "
-        result = (db.query(query1, 2,[jsondata['Title'], jsondata['Date'], jsondata['Description'], jsondata['url'], data['user']]))
+        result = (db.query(query1, 2, [jsondata['Title'], jsondata['Date'], jsondata['Description'], jsondata['url'],
+                                       data['user']]))
         print(result)
         if result is not 'Finished':
             raise Exception
-        result = str(db.query("select @@IDENTITY", 1,[]))
+        result = str(db.query("select @@IDENTITY", 1, []))
         result = result[11:-5]
         result = int(result)
         author_list_id = list(jsondata['author'])
@@ -485,7 +492,7 @@ def Accomplishmentuploadpatent(data):
         print(query1)
         if result is not 'Finished':
             raise Exception
-        result = str(db.query(" select  @@IDENTITY;", 1,[]))
+        result = str(db.query(" select  @@IDENTITY;", 1, []))
         result = result[11:-5]
         result = int(result)
         author_list_id = list(jsondata['author'])
@@ -581,12 +588,12 @@ def Accomplishmentdelete(data):
 
         if delquery1 != "":
             result = db.query(delquery1, 2, dellist1)
-            print("delquery1" + str(result ))
-            if  str(result) != "Finished":
+            print("delquery1" + str(result))
+            if str(result) != "Finished":
                 raise Exception
 
         result1 = db.query(delquery, 2, dellist)
-        print("delquery" +str(result1))
+        print("delquery" + str(result1))
         if str(result1) != "Finished":
             raise Exception
         return jsonify({'msg': "Deleted"}), 200
@@ -624,10 +631,10 @@ def updateuserdata(data):
             if (db.query(
                     "SELECT CASE WHEN EXISTS (select * from [Profile_image] where Euid=?) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
                     0, [data['user']])[0]):
-                query = "UPDATE [dbo].[Profile_image] SET [Image] = '"+jsondata['pic']+"' WHERE Euid = ?"
-                list = [ data['user']]
+                query = "UPDATE [dbo].[Profile_image] SET [Image] = '" + jsondata['pic'] + "' WHERE Euid = ?"
+                list = [data['user']]
             else:
-                query = "INSERT INTO [dbo].[Profile_image] VALUES(?,'"+jsondata['pic']+"')"
+                query = "INSERT INTO [dbo].[Profile_image] VALUES(?,'" + jsondata['pic'] + "')"
                 list = [data['user']]
             result1 = db.query(query, 2, list)
             print(result1)
@@ -654,9 +661,9 @@ def verifypassword1(data):
             return jsonify({'msg': "User doen't exist"}), 401
         if not verifypassword10(data, jsondata):
             return jsonify({'msg': "Wrong Password  1"}), 401
-        query = "UPDATE [dbo].[user_info] SET  [Password] =  '"+jsondata["new_password"]+"' WHERE [Euid] = ?  "
-        result = db.query(query, 2, [  data['user']])
-        print('password result'+str(result))
+        query = "UPDATE [dbo].[user_info] SET  [Password] =  '" + jsondata["new_password"] + "' WHERE [Euid] = ?  "
+        result = db.query(query, 2, [data['user']])
+        print('password result' + str(result))
         return jsonify({'msg': result}), 200
     except Exception as e:
         return jsonify({'msg': "Error " + str(e)}), 401
@@ -679,7 +686,7 @@ def download(data):
         if jsondata['type'] == 'all':
             query = "select patent.Pa_id,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent where Euid=" + \
                     "?)) and author.aid=patent_author.Aid and patent.pa_id in(select Pa_id from patent where Euid=?)  and patent.pa_id=patent_author.pa_id and date BETWEEN ?  and ?"
-            list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
+            list = [data['user'], data['user'], jsondata['datestart'], jsondata['dateend']]
             query1 = "select project_author.Pid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 where Euid=" + \
                      "?)) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and  Project_1.Pid in (select Pid from Project_1 where Euid=?) and date BETWEEN ? and ?"
             query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Type,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
@@ -698,14 +705,14 @@ def download(data):
         elif jsondata['type'] == 'Patent':
             query = "select patent.Pa_id,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent where Euid=" + \
                     "?)) and author.aid=patent_author.Aid and patent.pa_id=patent_author.pa_id and patent.pa_id in(select Pa_id from patent where Euid=?)  and date BETWEEN ?  and ?"
-            list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
+            list = [data['user'], data['user'], jsondata['datestart'], jsondata['dateend']]
 
             result = db.query(query, 1, list)
             return jsonify({'Patent': result}), 200
         elif jsondata['type'] == 'Publication':
             query2 = "select Publication.Pu_id ,Title, Publication_or_publisher,Date,Type,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author where Pu_id in(select Pu_id from Publication where Euid=" + \
                      "?))and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid=?)  and Date BETWEEN ? and ?"
-            list = [data['user'],data['user'], jsondata['datestart'], jsondata['dateend']]
+            list = [data['user'], data['user'], jsondata['datestart'], jsondata['dateend']]
 
             result1 = db.query(query2, 1, list)
             return jsonify({'Publication': result1}), 200
@@ -740,7 +747,7 @@ def facultylist(data):
     try:
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
-        if data['HOD']==True and data['Verify']==True:
+        if data['HOD'] == True and data['Verify'] == True:
             if not db.check(jsondata['Department']) or \
                     jsondata['Department'] == '' or \
                     jsondata['Department'] is None:
@@ -767,34 +774,33 @@ def facultylist(data):
         return jsonify({'msg': "Error "}), 401
 
 
-
 @app.route('/facultyverify', methods=['POST'])
 @token_required
 def facultyverify(data):
     try:
         jsondata = request.get_data().decode("utf-8")
         jsondata = json.loads(jsondata)
-        if data['HOD']==True and data['Verify']==True:
-            if  jsondata['Euid'] == '' or len(jsondata['Euid'])==0 or\
-                    jsondata['Euid'] is None  or type([]) != type (jsondata['Euid']) :
+        if data['HOD'] == True and data['Verify'] == True:
+            if jsondata['Euid'] == '' or len(jsondata['Euid']) == 0 or \
+                    jsondata['Euid'] is None or type([]) != type(jsondata['Euid']):
                 return jsonify({'msg': "Not Allowed"}), 405
-            test=0
-            for i in jsondata['Euid'] :
-                if not db.check(i)  :
-                    test=1
+            test = 0
+            for i in jsondata['Euid']:
+                if not db.check(i):
+                    test = 1
                     break
-            if test==1 :
+            if test == 1:
                 return jsonify({'msg': "Not Allowed"}), 405
-            str =''
-            for i in range(len(jsondata['Euid'])-1):
-                str+='?,'
-            str+='?'
-            query = " update Status set Status.Status=1 from	Status where Euid in("+str+")"
-            result  = db.query(query,2,jsondata['Euid'])
+            str = ''
+            for i in range(len(jsondata['Euid']) - 1):
+                str += '?,'
+            str += '?'
+            query = " update Status set Status.Status=1 from	Status where Euid in(" + str + ")"
+            result = db.query(query, 2, jsondata['Euid'])
             print(result)
-            if result!='Finished':
+            if result != 'Finished':
                 raise ('not finished')
-            return jsonify({'msg':"Faculty Verified"}), 200
+            return jsonify({'msg': "Faculty Verified"}), 200
 
             # if(data)
 
@@ -807,13 +813,133 @@ def facultyverify(data):
         return jsonify({'msg': "Error "}), 401
 
 
+@app.route('/faculty/download', methods=['POST'])
+@token_required
+def facultydownload(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        int(jsondata['dateend'])
+        int(jsondata['datestart'])
+        if data['HOD'] == True and data['Verify'] == True:
+            if jsondata['Euid'] == '' or len(jsondata['Euid']) == 0 or \
+                    jsondata['Euid'] is None or type([]) != type(jsondata['Euid']) or not db.check(jsondata['dateend']) \
+                    or not db.check(jsondata['type']) or not db.check(jsondata['datestart']) or \
+                    jsondata['dateend'] == '' or jsondata['datestart'] == '' or jsondata['type'] == '' or \
+                    jsondata['dateend'] is None or jsondata['datestart'] is None or jsondata['type'] is None:
+                return jsonify({'msg': "Not Allowed"}), 405
+            test = 0
+            for i in jsondata['Euid']:
+                if not db.check(i):
+                    test = 1
+                    break
+            if test == 1:
+                return jsonify({'msg': "Not Allowed"}), 405
+            str = ''
+            for i in range(len(jsondata['Euid']) - 1):
+                str += '?,'
+            str += '?'
+            if jsondata['type'] == 'all':
+
+                query = "select   patent.Pa_id,patent.Euid  ,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent" \
+                        " where Euid in (" + str + "))) and author.aid=patent_author.Aid and patent.pa_id in(select Pa_id from patent where Euid in (" + str + ") )  and patent.pa_id=patent_author.pa_id and date BETWEEN ?  and ?"
+                list = jsondata['Euid']+ jsondata['Euid']+[ jsondata['datestart'], jsondata['dateend']]
+                query1 = "select  project_author.Pid,Project_1.Euid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 " \
+                         "where Euid in ( " + str + " ))) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and  Project_1.Pid in (select Pid from Project_1 where Euid in ( " + str + " )) and date BETWEEN ? and ?"
+                query2 = "select Publication.Pu_id ,Publication.Euid,Title, Publication_or_publisher,Date,Type,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author" \
+                         " where Pu_id in(select Pu_id from Publication where Euid in ( " + str + " ))) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid in ( "+str+" ) )  and Date BETWEEN ?  and ?"
+                query3 = "select * from Honors_and_Award where Euid in ( " + str + " ) and  Date BETWEEN ? and ?"
+                list1 = jsondata['Euid']+[ jsondata['datestart'], jsondata['dateend']]
+
+                result = db.query(query, 1, list)
+                result1 = db.query(query1, 1, list)
+                result2 = db.query(query2, 1, list)
+                result3 = db.query(query3, 1, list1)
+                return jsonify({'Patent': result,
+                                'Project': result1,
+                                'Publication': result2,
+                                'Honors_and_Award': result3}), 200
+            elif jsondata['type'] == 'Patent':
+                query = "select   patent.Pa_id,patent.Euid  ,title,Patent_office,Application_no,Date,Description,patent.URL ,Name,Email,Phoneno from patent, patent_author, author where author.aid in (select Aid from patent_author where Pa_id in(select Pa_id from patent" \
+                        " where Euid in (" + str + "))) and author.aid=patent_author.Aid and patent.pa_id in(select Pa_id from patent where Euid in (" + str + ") )  and patent.pa_id=patent_author.pa_id and date BETWEEN ?  and ?"
+                list = jsondata['Euid']+ jsondata['Euid']+[ jsondata['datestart'], jsondata['dateend']]
+
+                result = db.query(query, 1, list)
+                return jsonify({'Patent': result}), 200
+            elif jsondata['type'] == 'Publication':
+                query2 = "select Publication.Pu_id ,Publication.Euid,Title, Publication_or_publisher,Date,Type,Description,URL,name , Email,Phoneno from Publication, publication_author, author where author.aid in (select Aid from publication_author" \
+                         " where Pu_id in(select Pu_id from Publication where Euid in ( " + str + " ))) and author.aid=publication_author.Aid and Publication.Pu_id=publication_author.Pu_id and Publication.Pu_id in (select Pu_id from Publication where Euid in ( " + str + " ) )  and Date BETWEEN ?  and ?"
+                list = jsondata['Euid']+ jsondata['Euid']+[ jsondata['datestart'], jsondata['dateend']]
+
+                result1 = db.query(query2, 1, list)
+                return jsonify({'Publication': result1}), 200
+            elif jsondata['type'] == 'Project':
+                query1 = "select  project_author.Pid,Project_1.Euid,Title,Date,Description,URL,Name,Email,Phoneno from Project_1, project_author, author where author.aid in (select Aid from project_author where Pid in(select Pid from Project_1 " \
+                         "where Euid in ( " + str + " ))) and author.aid=project_author.Aid and Project_1.Pid=project_author.Pid and  Project_1.Pid in (select Pid from Project_1 where Euid in ( " + str + " )) and date BETWEEN ? and ?"
+                list = jsondata['Euid']+ jsondata['Euid']+[ jsondata['datestart'], jsondata['dateend']]
+
+                result1 = db.query(query1, 1, list)
+                return jsonify({
+                    'Project': result1}), 200
+            elif jsondata['type'] == 'HonorsandAward':
+                query3 = "select * from Honors_and_Award where Euid in ( " + str + " ) and  Date BETWEEN ? and ?"
+                list1 = jsondata['Euid']+[ jsondata['datestart'], jsondata['dateend']]
+
+                result1 = db.query(query3, 1, list1)
+                return jsonify({
+                    'Honors_and_Award': result1}), 200
+            else:
+                raise Exception
 
 
+            # if(data)
+
+        else:
+            return jsonify({'msg': "Not Allowed"}), 405
 
 
+    except  Exception as e:
+        print(e)
+        return jsonify({'msg': "Error "}), 401
 
 
+@app.route('/faculty/Profile', methods=['POST'])
+@token_required
+def facultyprofile(data):
+    try:
+        jsondata = request.get_data().decode("utf-8")
+        jsondata = json.loads(jsondata)
+        if data['HOD'] == True and data['Verify'] == True:
+            if jsondata['Euid'] == '' or \
+                    jsondata['Euid'] is None or not db.check(jsondata['Euid']):
+                return jsonify({'msg': "Not Allowed"}), 405
+            if db.query(
+                    "SELECT CASE WHEN EXISTS ( SELECT name FROM [dbo].[Faculty_info] where Euid = ?  ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
+                    0, [jsondata['Euid']])[0]:
 
+                query = " SELECT name ,phoneno ,Email , Department, DOJ, DOB,Qualification, University FROM [dbo].[Faculty_info] where Euid = ? "
+                result = db.query(query, 0, [jsondata['Euid']])
+            else:
+                return jsonify({'msg': "error"}), 404
+            if db.query(
+                    "SELECT CASE WHEN EXISTS ( SELECT image FROM [dbo].[Profile_image] where Euid = ? ) THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END",
+                    0, [jsondata['Euid']])[0]:
+                query1 = "SELECT image FROM [dbo].[Profile_image] where Euid = ? "
+                result1 = db.query(query1, 0, [jsondata['Euid']])
+            else:
+                result1 = 'noimage'
+
+            print(result)
+            return jsonify({'msg': result, 'pic': str(result1[0])[13:-4]}), 200
+
+
+        else:
+            return jsonify({'msg': "Not Allowed"}), 405
+
+
+    except  Exception as e:
+        print(e)
+        return jsonify({'msg': "Error "}), 401
 
 
 def addauthor(list):
@@ -821,7 +947,7 @@ def addauthor(list):
         result = authorsearch1(list)
         print(result)
         if result is None:
-            result = (db.query("insert into author values(?,?,?)", 2,[list[0] , list[1] , list[2]  ]))
+            result = (db.query("insert into author values(?,?,?)", 2, [list[0], list[1], list[2]]))
             if result is not 'Finished':
                 raise Exception
 
@@ -923,13 +1049,13 @@ def verifypassword10(data, jsondata):
             raise Exception
 
         query1 = "SELECT [Password] FROM [dbo].[user_info] WHERE Euid = ?"
-        result = (db.query(query1, 0,[data['user']]))
+        result = (db.query(query1, 0, [data['user']]))
         if jsondata['password'] == result[0]:
             return True
 
         return False
     except Exception as e:
-        print( "verifypassword10"+ str(e))
+        print("verifypassword10" + str(e))
         return False
 
 # extra code
