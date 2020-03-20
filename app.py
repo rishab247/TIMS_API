@@ -85,7 +85,6 @@ def login():
         result1 = (db.query(query2, 0, [auth.username]))
         query = "SELECT  [Status] FROM [dbo].[Status]where Euid = ? "
         result3 = db.query(query, 0, [auth.username])
-        print((result3[0]))
         if result is None:
             return jsonify({'msg': 'incorrect username'}), 401
         if auth and auth.password == result[0]:
