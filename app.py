@@ -167,7 +167,7 @@ def userdata(data):
     result1 = a.split(" ")
     print(result1)
 
-    query2 = "SELECT status FROM [dbo].[status]where Euid = ? "
+    query2 = "SELECT [HOD] FROM [dbo].[status]where Euid = ? "
     result2 = db.query(query2, 0, [data['user']])
 
     if (db.query(
