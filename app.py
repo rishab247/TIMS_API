@@ -773,7 +773,7 @@ def facultylist(data):
         return jsonify({'msg': "Error "}), 401
 
 
-@app.route('/facultyverify', methods=['POST'])
+@app.route('/facultyverify', methods=['PUT'])
 @token_required
 def facultyverify(data):
     try:
@@ -782,7 +782,7 @@ def facultyverify(data):
         if data['HOD'] == True and data['Verify'] == True:
             if jsondata['Euid'] == '' or len(jsondata['Euid']) == 0 or \
                     jsondata['Euid'] is None or type([]) != type(jsondata['Euid']):
-                return jsonify({'msg': "Not Allowed"}), 405
+                return jsonify({'msg': "Not Allowedaa"}), 405
             test = 0
             for i in jsondata['Euid']:
                 if not db.check(i):
@@ -937,7 +937,7 @@ def facultyprofile(data):
                 result1 = 'noimage'
 
             print(result)
-            return jsonify({'msg': result, 'pic': str(result1[0])[13:-4]}), 200
+            return jsonify({'msg': result, 'pic': str(result1[0])[12:-4]}), 200
 
 
         else:

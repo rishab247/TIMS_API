@@ -5,7 +5,6 @@ chardet==3.0.4
 Click==7.0
 colorama==0.4.3
 coverage==5.0.3
-cryptography==2.8
 Flask==1.1.1
 Flask-Limiter==1.1.0
 google-api-core==1.15.0
@@ -29,7 +28,6 @@ requests==2.22.0
 rsa==4.0
 six==1.13.0
 termcolor==1.1.0
-twilio==6.35.4
 urllib3==1.25.7
 Werkzeug==0.16.0
 wikipedia
