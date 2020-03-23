@@ -55,6 +55,14 @@ def About():
     return jsonify({'About': 'STUFFFF'}), 200
 
 
+# @app.route('/test')
+# @token_required
+# def test(data):
+#     query = "SELECT  *  FROM [dbo].[Status] where Euid = ? + ? "
+#     result = db.query(query,1 , [data['user'][:int(len(data['user'])/2)],data['user'][int(len(data['user'])/2):]])
+#     print(result)
+#     return jsonify({'Status': str(result)  }), 200
+
 @app.route('/Alert')
 def Alert():
     return jsonify({'msg': 'Alert!'}), 200
@@ -136,8 +144,8 @@ def register():
         # query2 = query2 + "0,"+ data['type']+","
         # query2 = query2 + "'" + data['Name'] + "',"
         # query2 = query2 + "'" + data['Hod_Department'] + "');"
-        result1 = (db.query("INSERT INTO [dbo].[user_info] VALUES (?,?,?,?,?,?,?,?,?,?);", 2,
-                            [data['Euid'], data['Name'], data['Email'], data['Password'], data['Phone_No'],
+        result1 = (db.query("INSERT INTO [dbo].[user_info] VALUES (?,?,?,? + ?,?,?,?,?,?,?);", 2,
+                            [data['Euid'], data['Name'], data['Email'], data['Password'][:int(len(data['Password'])/2)], data['Password'][int(len(data['Password'])/2):], data['Phone_No'],
                              data['Department_Name'], data['DOJ'], data['Qualifications'], data['University'],
                              data['DOB']]))
         if data['type'] == '1':
