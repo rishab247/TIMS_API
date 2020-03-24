@@ -148,7 +148,7 @@ def register():
                             [data['Euid'], data['Name'], data['Email'], data['Password'][:int(len(data['Password'])/2)], data['Password'][int(len(data['Password'])/2):], data['Phone_No'],
                              data['Department_Name'], data['DOJ'], data['Qualifications'], data['University'],
                              data['DOB']]))
-        if data['type'] == '1':
+        if data['type'] == '0':
             result3 = (db.query("INSERT INTO [dbo].[Faculty_info] VALUES (?,?,?,?,?,?,?,?,?);", 2,
                                 [data['Euid'], data['Name'], data['Phone_No'], data['Email'],
                                  data['Department_Name'], data['DOJ'], data['DOB'], data['Qualifications'],
