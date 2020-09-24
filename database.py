@@ -9,7 +9,7 @@ try:
     connection = pypyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
                                   'Server=tcp:timsserver1.database.windows.net,1433;'
                                   'Database=TIMS;'
-                                  'Uid=timsadmin;Pwd=Rishab@12;')
+                                  'Uid=tims1@tims1;Pwd=Rishab@12;')
 
 
 except Exception as e:
