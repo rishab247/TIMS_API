@@ -8,7 +8,7 @@ try:
 
     connection = pypyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
                                   'Server=tcp:timsserver1.database.windows.net,1433;'
-                                  'Database=TIMS;'
+                                  'Database=timsdb;'
                                   'Uid=tims1@tims1;Pwd=Rishab@12;')
 
 
